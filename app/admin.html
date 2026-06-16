@@ -1,13 +1,13 @@
 <!doctype html>
 <!--
-  admin.html — MSP office dashboard. Login is a Supabase "magic link" emailed
+  admin.html - MSP office dashboard. Login is a Supabase "magic link" emailed
   to the address; only allow-listed admins (admin_user table) can see data.
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Office dashboard — MSP Tutor Registration</title>
+<title>Office dashboard - MSP Tutor Registration</title>
 <link rel="icon" type="image/png" href="assets/img/msp-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,8 +18,8 @@
 
 <header class="topbar">
   <div class="topbar-inner">
-    <a href="index.html" class="logos" aria-label="Maastricht University, Faculty of Science and Engineering — home">
-      <img class="um-logo" src="assets/img/um-fse-logo.png" alt="Maastricht University — Faculty of Science and Engineering">
+    <a href="index.html" class="logos" aria-label="Maastricht University, Faculty of Science and Engineering - home">
+      <img class="um-logo" src="assets/img/um-fse-logo.png" alt="Maastricht University - Faculty of Science and Engineering">
       <span class="divider"></span>
       <span class="lockup-text">Office Dashboard<small>Maastricht Science Programme</small></span>
     </a>
@@ -37,7 +37,7 @@
   <!-- LOGIN -->
   <div id="login">
     <h2 class="section">Office login</h2>
-    <p class="lead">Enter your MSP email. We'll send you a one-time sign-in link — no password to remember. Only addresses on the office allow-list can see registrations.</p>
+    <p class="lead">Enter your MSP email. We'll send you a one-time sign-in link - no password to remember. Only addresses on the office allow-list can see registrations.</p>
     <div style="max-width:420px;margin-top:22px">
       <div id="login-msg"></div>
       <div class="field"><label>Email address</label><input id="login-email" type="email" placeholder="name@maastrichtuniversity.nl"></div>
@@ -64,7 +64,7 @@
     <div class="stat-grid" id="stats"></div>
 
     <div class="toolbar">
-      <input id="adm-search" type="text" placeholder="Search name, email, course, group…">
+      <input id="adm-search" type="text" placeholder="Search name, email, course, group...">
       <select id="adm-period" style="width:auto"><option value="">All periods</option></select>
       <select id="adm-status" style="width:auto">
         <option value="confirmed">Confirmed only</option>
@@ -91,7 +91,7 @@
       <h2 class="section" style="margin:0">Website feedback</h2>
       <button class="btn btn-ghost" id="fb-csv-btn">Export CSV</button>
     </div>
-    <p class="lead">What tutors and visitors told us through the “Share feedback” link. Tick “Done” once handled.</p>
+    <p class="lead">What tutors and visitors told us through the "Share feedback" link. Tick "Done" once handled.</p>
     <div style="overflow-x:auto;margin-top:16px">
       <table class="data" id="fb-table">
         <thead><tr>
@@ -125,7 +125,7 @@
   }
   const g_day = (d) => ({ mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri" }[(d||"").toLowerCase().slice(0,3)] || d || "");
   const fmtTimes = (g) => {
-    const p = (d, s, e) => (d && s && e) ? `${g_day(d)} ${s}–${e}` : "";
+    const p = (d, s, e) => (d && s && e) ? `${g_day(d)} ${s}-${e}` : "";
     return [p(g.day1,g.start1,g.end1), p(g.day2,g.start2,g.end2)].filter(Boolean).join(" · ");
   };
 

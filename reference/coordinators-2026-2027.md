@@ -1,8 +1,8 @@
-# MSP Course Coordinators — 2026/2027
+# MSP Course Coordinators - 2026/2027
 
 Source: *Course Coordinators Total as from 2025-2026 onwards (iov Romy).xlsx*, sheet `2026-2027`. 81 coordinators.
 
-Name → UM email. Use this to fill the `coordinator` / `coordinator_email` fields when adding courses to the tool.
+Name -> UM email. Use this to fill the `coordinator` / `coordinator_email` fields when adding courses to the tool.
 
 | Full name | UM email |
 |---|---|

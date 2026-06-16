@@ -1,14 +1,14 @@
 /* ==========================================================================
-   MSP Tutor Registration — Maastricht University house-style skin
+   MSP Tutor Registration - Maastricht University house-style skin
    --------------------------------------------------------------------------
-   ONE stylesheet, token-driven. Visual identity only — no logic lives here.
+   ONE stylesheet, token-driven. Visual identity only - no logic lives here.
 
    Colour decision (per UM house style):
      • Navy (#001C3D) dominates surfaces, structure and ALL body copy.
-     • PRIMARY accent = UM orange-red (#E84E10): the single focal colour —
+     • PRIMARY accent = UM orange-red (#E84E10): the single focal colour -
        claim/CTA buttons, the live "open right now" counts, the filling-up
        progress bar, and the selected state. White text on orange is reserved
-       for LARGE/BOLD button text only (≈3.8:1); body text is never orange.
+       for LARGE/BOLD button text only (~3.8:1); body text is never orange.
      • SECONDARY accent = light blue (#00A2DB): links and quiet tints ONLY,
        never a focal/hero colour.
    Type decision: sans-only. One humanist sans (Inter Tight) for everything;
@@ -21,12 +21,12 @@
   --ink:#101b2c; --muted:#566072; --line:#dfe3ea; --line-2:#eef1f5;
   --bg:#ffffff; --bg-soft:#f5f7f9; --bg-navy-tint:#f3f6fb;
 
-  --accent:#E84E10;        /* PRIMARY — UM orange-red (focal) */
+  --accent:#E84E10;        /* PRIMARY - UM orange-red (focal) */
   --accent-press:#cf440d;  /* pressed/hover */
   --accent-tint:#fdeee7;   /* faint orange wash */
   --accent-line:#f6c6b3;
 
-  --blue:#00A2DB;          /* SECONDARY — links + quiet tints only */
+  --blue:#00A2DB;          /* SECONDARY - links + quiet tints only */
   --blue-tint:#e9f6fc;
 
   --green:#1d7a4f; --green-bg:#e7f4ec;
@@ -93,7 +93,7 @@ h1,h2,h3,h4{font-weight:700;letter-spacing:-.015em;color:var(--navy);margin:0}
 .bstat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 16px;min-width:120px}
 .bstat .n{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1;color:#fff}
 .bstat.focal{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.bstat.focal .n{color:#ff6a33}            /* orange number — focal, AA on navy at large size */
+.bstat.focal .n{color:#ff6a33}            /* orange number - focal, AA on navy at large size */
 .bstat .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:#9fb0c4;margin-top:7px;font-weight:600}
 .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:7px;vertical-align:middle;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -122,7 +122,7 @@ h2.section{font-size:24px;margin:0 0 12px}
 .toolbar input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 
 /* ==========================================================================
-   TIMETABLE — Mon–Fri × time-slot grid of open groups
+   TIMETABLE - Mon-Fri × time-slot grid of open groups
    ========================================================================== */
 .tt-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--line)}
 .timetable{display:grid;grid-template-columns:74px repeat(5,minmax(150px,1fr));gap:1px;min-width:760px}
@@ -157,7 +157,7 @@ h2.section{font-size:24px;margin:0 0 12px}
 .tt-choice.selected span{color:var(--accent-press)}
 
 /* ==========================================================================
-   COURSE LIST (secondary view) — flat rows, no soft card grid
+   COURSE LIST (secondary view) - flat rows, no soft card grid
    ========================================================================== */
 #catalogue{display:flex;flex-direction:column;gap:10px}
 .course{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
@@ -214,7 +214,7 @@ h2.section{font-size:24px;margin:0 0 12px}
 /* ---- buttons -------------------------------------------------------------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;border-radius:8px;font:700 15px var(--sans);letter-spacing:.005em;cursor:pointer;text-decoration:none;padding:12px 20px;transition:background .14s,border-color .14s,color .14s}
 .btn svg{width:16px;height:16px}
-.btn-primary{background:var(--accent);color:#fff}          /* focal CTA — white-on-orange, bold/large only */
+.btn-primary{background:var(--accent);color:#fff}          /* focal CTA - white-on-orange, bold/large only */
 .btn-primary:hover{background:var(--accent-press)}
 .btn-navy{background:var(--navy);color:#fff}
 .btn-navy:hover{background:var(--navy-2)}
@@ -249,7 +249,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .notice.ok{background:var(--green-bg);border-left:4px solid var(--green);color:#0f5d3f}
 .notice.err{background:var(--red-bg);border-left:4px solid var(--red);color:#7a1f15}
 
-/* ---- landing cards (index) — flat, no hover-lift -------------------------- */
+/* ---- landing cards (index) - flat, no hover-lift -------------------------- */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
 .card{border:1px solid var(--line);border-radius:10px;padding:20px;background:#fff}
 .card .ico{width:36px;height:36px;border-radius:8px;background:var(--accent-tint);color:var(--accent);display:grid;place-items:center;margin-bottom:13px}
@@ -285,7 +285,7 @@ footer{background:var(--navy);color:#c5d0de;border-top:4px solid var(--accent)}
 .empty-state{text-align:center;padding:46px 20px;color:var(--muted);font-size:14px}
 
 /* ==========================================================================
-   PREMIUM POLISH — depth, motion & micro-interactions
+   PREMIUM POLISH - depth, motion & micro-interactions
    On-brand (navy + UM orange), AA-safe, and fully disabled under
    prefers-reduced-motion by the accessibility block near the top of this file.
    ========================================================================== */
@@ -327,7 +327,7 @@ footer{background:var(--navy);color:#c5d0de;border-top:4px solid var(--accent)}
 .stat{transition:transform .18s ease,box-shadow .18s ease}
 .stat:hover{transform:translateY(-2px);box-shadow:0 12px 28px -18px rgba(0,28,61,.5)}
 
-/* Skeleton shimmer while the timetable loads — instant "modern app" read */
+/* Skeleton shimmer while the timetable loads - instant "modern app" read */
 .skeleton{display:grid;grid-template-columns:74px repeat(5,minmax(120px,1fr));gap:1px;
   background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .skeleton .sk-cell{background:#fff;min-height:54px;position:relative;overflow:hidden}

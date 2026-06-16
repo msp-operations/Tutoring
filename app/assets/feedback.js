@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MSP Tutor Registration — feedback widget (shared on every page).
+   MSP Tutor Registration - feedback widget (shared on every page).
    Injects a "Share feedback" link into the footer and a small modal. Submits
    via MSP.submitFeedback (saved in Supabase; optionally emailed to the office).
    Defensive: if anything is missing it silently no-ops and never breaks a page.
@@ -54,7 +54,7 @@
     function formHTML() {
       return `
         <p style="margin-top:0;font-size:14px;color:var(--muted)">
-          Help us improve the tutor-registration site — suggestions, problems, or anything you'd change. It goes straight to the MSP office.</p>
+          Help us improve the tutor-registration site - suggestions, problems, or anything you'd change. It goes straight to the MSP office.</p>
         <div id="fb-err"></div>
         <div class="field">
           <label for="fb-cat">Type of feedback</label>
@@ -91,7 +91,7 @@
       const message = $("fb-msg").value.trim();
       const err = $("fb-err"); err.innerHTML = "";
       if (!message) { err.innerHTML = errBox("Please enter your feedback first."); $("fb-msg").focus(); return; }
-      const btn = $("fb-send"); btn.disabled = true; btn.textContent = "Sending…";
+      const btn = $("fb-send"); btn.disabled = true; btn.textContent = "Sending...";
       try {
         await MSP.submitFeedback({
           message, category: $("fb-cat").value,
@@ -100,7 +100,7 @@
         success();
       } catch (e) {
         if (e.code === "PREVIEW_MODE") {
-          err.innerHTML = errBox("This is a preview — connect Supabase to send feedback for real.");
+          err.innerHTML = errBox("This is a preview - connect Supabase to send feedback for real.");
         } else {
           err.innerHTML = errBox("Sorry, something went wrong. Please try again, or email the office directly.");
         }
