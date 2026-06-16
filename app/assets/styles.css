@@ -91,6 +91,11 @@ h2.section{font-family:var(--serif);font-size:28px;color:var(--navy);margin:0 0 
 .course.open .chev{transform:rotate(90deg)}
 .groups{display:none;padding:6px 20px 20px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
 .course.open .groups{display:grid}
+.course-about{display:none;padding:0 20px 4px;border-top:1px solid var(--line)}
+.course.open .course-about{display:block;padding-top:14px}
+.course-about .about-row{font-size:13px;color:#374151;margin-bottom:6px}
+.course-about .about-row strong{color:var(--navy)}
+.course-about .about-desc{font-size:13.5px;color:#4b5563;line-height:1.6;margin:8px 0 4px;max-width:760px}
 
 /* group chip */
 .group{position:relative;border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;background:#fff;text-align:left;font:inherit}

@@ -168,6 +168,7 @@
           </span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </div>
+        ${aboutHtml(c)}
         <div class="groups"></div>`;
       const head = block.querySelector(".course-head");
       head.addEventListener("click", () => {
@@ -179,6 +180,20 @@
       host.appendChild(block);
     });
     if (!shown) host.innerHTML = `<div class="notice info" style="justify-content:center">No courses match your filters.</div>`;
+  }
+
+  const esc = (s) => (s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+  function aboutHtml(c) {
+    const bits = [];
+    if (c.coordinator) {
+      const mail = c.coordinator_email
+        ? ` · <a href="mailto:${esc(c.coordinator_email)}">${esc(c.coordinator_email)}</a>` : "";
+      bits.push(`<div class="about-row"><strong>Coordinator:</strong> ${esc(c.coordinator)}${mail}</div>`);
+    }
+    if (c.prerequisites) bits.push(`<div class="about-row"><strong>Prerequisites:</strong> ${esc(c.prerequisites)}</div>`);
+    if (c.description) bits.push(`<p class="about-desc">${esc(c.description)}</p>`);
+    if (!bits.length) return "";
+    return `<div class="course-about">${bits.join("")}</div>`;
   }
 
   function renderGroup(c, g) {

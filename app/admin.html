@@ -237,6 +237,7 @@
       <div class="course open" style="margin-top:14px">
         <div class="course-head" style="cursor:default">
           <span class="course-code">${c.code}</span><span class="course-title">${c.title}</span>
+          ${c.coordinator ? `<span class="course-meta">${c.coordinator}${c.coordinator_email ? ` · ${c.coordinator_email}` : ""}</span>` : ""}
         </div>
         <div class="groups" style="display:grid">
           ${c.groups.map((g) => {
