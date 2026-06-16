@@ -41,6 +41,7 @@
         <div class="board-eyebrow">Maastricht Science Programme · Tutoring</div>
         <h1>Tutorial groups open right now</h1>
         <p class="sub">Claim the group(s) you want to tutor. First come, first served — once a group is taken it disappears for everyone, instantly.</p>
+        <p class="board-dates" id="board-dates"></p>
       </div>
       <img class="board-emblem" src="assets/img/msp-logo.png" alt="">
     </div>
@@ -184,12 +185,15 @@
   }
 
   // ---------- live board stats ----------
+  const PERIOD_DATES = { P1: "31 August – 16 October 2026", P2: "26 October – 10 December 2026" };
   function renderBoardStats() {
     const gs = catalogue.filter((c) => c.period === period).flatMap((c) => c.groups);
     const open = gs.filter((g) => g.is_open && g.claimed < g.capacity).length;
     const filled = gs.length - open;
     const courses = catalogue.filter((c) => c.period === period).length;
     const pNum = period.replace(/^P/, "");
+    const dates = PERIOD_DATES[period];
+    $("board-dates").textContent = dates ? `Period ${pNum} · ${dates}` : "";
     $("board-stats").innerHTML =
       `<div class="bstat focal"><div class="n"><span class="live-dot"></span>${open}</div><div class="l">Open right now</div></div>` +
       `<div class="bstat"><div class="n">${filled}</div><div class="l">Filled</div></div>` +

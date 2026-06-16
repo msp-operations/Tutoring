@@ -18,5 +18,5 @@ window.MSP_CONFIG = {
 
   // Cosmetic only.
   ACADEMIC_YEAR: "2026 / 2027",
-  CONTACT_EMAIL: "s.dufour@maastrichtuniversity.nl"
+  CONTACT_EMAIL: "msp-tutoring@maastrichtuniversity.nl"
 };
