@@ -114,8 +114,10 @@
 <script src="assets/config.js"></script>
 <script src="assets/demo-data.js"></script>
 <script src="assets/supabase.js"></script>
+<script src="assets/disciplines.js"></script>
 <script>
 (function () {
+  const disc = (code, small) => (window.MSPDISC ? MSPDISC.chip(code, small) : "");
   const $ = (id) => document.getElementById(id);
   let catalogue = [], regs = [], settings = {}, admPeriod = "P1", feedback = [];
   const esc = (s) => (s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"));
@@ -289,7 +291,7 @@
     host.innerHTML = courses.map((c) => `
       <div class="course open" style="margin-top:14px">
         <div class="course-head" style="cursor:default">
-          <span class="course-code">${c.code}</span><span class="course-title">${c.title}</span>
+          ${disc(c.code)}<span class="course-code">${c.code}</span><span class="course-title">${c.title}</span>
           ${c.coordinator ? `<span class="course-meta">${c.coordinator}${c.coordinator_email ? ` · ${c.coordinator_email}` : ""}</span>` : ""}
         </div>
         <div class="groups" style="display:grid">
