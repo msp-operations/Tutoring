@@ -84,6 +84,13 @@ several groups is all-or-nothing.
 - Sign-ups are inserted only through the locked claim function, never directly.
 - Data can be EU-hosted and deleted at any time.
 
+## Where the catalogue data comes from
+
+Tutorial groups, days and times come from `Info for tutor registration tool.xlsx`.
+Course coordinators, prerequisites and the "About this course" descriptions are
+pulled from `2026-2027 MSP Course Catalogue April.pdf`. Both feed `seed.sql`
+and the offline preview data.
+
 ## Updating the catalogue for a new year
 
 Re-generate `seed.sql` from a new spreadsheet (see the parser used to create
