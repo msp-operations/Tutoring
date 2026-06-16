@@ -87,9 +87,12 @@ several groups is all-or-nothing.
 ## Where the catalogue data comes from
 
 Tutorial groups, days and times come from `Info for tutor registration tool.xlsx`.
-Course coordinators, prerequisites and the "About this course" descriptions are
-pulled from `2026-2027 MSP Course Catalogue April.pdf`. Both feed `seed.sql`
-and the offline preview data.
+The full course information shown on the register page — coordinator + email,
+level, prerequisites, co-requisites, recommended courses, objectives,
+description, instructional format, assessment, literature and the generative-AI
+policy — is pulled from `2026-2027 MSP Course Catalogue April.pdf`. The flat
+fields live in their own columns; everything else is stored in a `details`
+JSONB column on `course`. Both feed `seed.sql` and the offline preview data.
 
 ## Updating the catalogue for a new year
 
