@@ -1,0 +1,357 @@
+<!doctype html>
+<!--
+  register.html — the tutor-facing registration flow.
+  Shows live availability, lets a tutor pick one or more tutorial groups,
+  warns about time clashes, and claims them atomically via Supabase.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register to tutor — Maastricht Science Programme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="logos" aria-label="MSP home">
+      <span class="wordmark">Maastricht Science Programme<small>Tutor Registration</small></span>
+    </a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="register.html" class="active">Register to tutor</a>
+      <a href="admin.html">Office login</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="dot"></span> Live availability</div>
+    <h1>Choose your tutorial group(s).</h1>
+    <p>Expand a course, tick the group(s) you want to tutor, then add your details. Filled groups update in real time.</p>
+  </div>
+</section>
+
+<main>
+  <div id="notice-area"></div>
+
+  <div class="tabs" id="period-tabs" role="tablist"></div>
+
+  <div class="toolbar">
+    <input id="search" type="text" placeholder="Search course code, name or group (e.g. CHE1101, Physics, A3)…">
+    <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--muted);margin:0">
+      <input type="checkbox" id="only-open" style="width:auto"> Only show courses with open groups
+    </label>
+  </div>
+
+  <div id="catalogue"><div class="spinner"></div></div>
+</main>
+
+<!-- sticky selection bar -->
+<div class="cart" id="cart" style="display:none">
+  <div class="cart-inner">
+    <div>
+      <div style="font-size:12.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Your selection</div>
+      <div class="seltags" id="seltags"></div>
+    </div>
+    <button class="btn btn-navy" id="continue-btn">Continue to your details
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- details modal -->
+<div class="modal-overlay" id="overlay"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true">
+  <div class="head">
+    <h3 id="modal-title">Your details</h3>
+    <button class="close" id="modal-close" aria-label="Close">×</button>
+  </div>
+  <div class="body" id="modal-body"></div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>Maastricht Science Programme · Faculty of Science and Engineering</div>
+    <div class="copy">© Maastricht Science Programme</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/config.js"></script>
+<script src="assets/demo-data.js"></script>
+<script src="assets/supabase.js"></script>
+<script>
+(function () {
+  let catalogue = [];
+  let settings = { registration_open: true, banner_message: null };
+  const selected = new Map();          // groupId -> { code, title, label, group }
+  const openCourses = new Set();       // course ids expanded by the user
+  let period = "P1";
+  let search = "";
+  let onlyOpen = false;
+
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- time-clash helpers ----------
+  const day3 = (d) => (d || "").toString().trim().toLowerCase().slice(0, 3);
+  const toMin = (t) => { if (!t) return null; const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  function sessions(g) {
+    const out = [];
+    if (g.day1 && g.start1 && g.end1) out.push({ d: day3(g.day1), s: toMin(g.start1), e: toMin(g.end1) });
+    if (g.day2 && g.start2 && g.end2) out.push({ d: day3(g.day2), s: toMin(g.start2), e: toMin(g.end2) });
+    return out;
+  }
+  function clash(a, b) {
+    for (const x of sessions(a)) for (const y of sessions(b))
+      if (x.d === y.d && x.s < y.e && y.s < x.e) return true;
+    return false;
+  }
+  function clashesWithSelection(g) {
+    for (const { group } of selected.values()) {
+      if (group.id === g.id) continue;
+      if (clash(g, group)) return true;
+    }
+    return false;
+  }
+  const fmtTimes = (g) => {
+    const part = (d, s, e) => (d && s && e) ? `${g_day(d)} ${s}–${e}` : "";
+    return [part(g.day1, g.start1, g.end1), part(g.day2, g.start2, g.end2)].filter(Boolean).join(" · ");
+  };
+  const g_day = (d) => ({ mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" }[day3(d)] || d);
+
+  // ---------- rendering ----------
+  function renderTabs() {
+    const periods = [...new Set(catalogue.map((c) => c.period))].sort();
+    if (!periods.includes(period)) period = periods[0] || "P1";
+    $("period-tabs").innerHTML = periods.map((p) =>
+      `<button role="tab" class="${p === period ? "active" : ""}" data-p="${p}">Period ${p.replace(/^P/, "")}</button>`
+    ).join("");
+    $("period-tabs").querySelectorAll("button").forEach((b) =>
+      b.addEventListener("click", () => { period = b.dataset.p; renderTabs(); renderCatalogue(); })
+    );
+  }
+
+  function matchesSearch(c) {
+    if (!search) return true;
+    const hay = (c.code + " " + c.title + " " + c.groups.map((g) => g.label).join(" ")).toLowerCase();
+    return hay.includes(search);
+  }
+
+  function renderCatalogue() {
+    const host = $("catalogue");
+    const courses = catalogue.filter((c) => c.period === period && matchesSearch(c));
+    host.innerHTML = "";
+    let shown = 0;
+    courses.forEach((c) => {
+      const total = c.groups.length;
+      const openGroups = c.groups.filter((g) => g.is_open && g.claimed < g.capacity).length;
+      if (onlyOpen && openGroups === 0) return;
+      shown++;
+      const filled = total - openGroups;
+      const pct = total ? Math.round((filled / total) * 100) : 0;
+      const isOpen = openCourses.has(c.id) || !!search;
+      const block = document.createElement("div");
+      block.className = "course" + (isOpen ? " open" : "");
+      block.innerHTML = `
+        <div class="course-head">
+          <span class="course-code">${c.code}</span>
+          <span class="course-title">${c.title}</span>
+          <span class="course-progress">
+            <span class="course-meta">${openGroups} of ${total} open</span>
+            <span class="bar"><i style="width:${pct}%"></i></span>
+          </span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="groups"></div>`;
+      const head = block.querySelector(".course-head");
+      head.addEventListener("click", () => {
+        if (openCourses.has(c.id)) openCourses.delete(c.id); else openCourses.add(c.id);
+        block.classList.toggle("open");
+      });
+      const grid = block.querySelector(".groups");
+      c.groups.forEach((g) => grid.appendChild(renderGroup(c, g)));
+      host.appendChild(block);
+    });
+    if (!shown) host.innerHTML = `<div class="notice info" style="justify-content:center">No courses match your filters.</div>`;
+  }
+
+  function renderGroup(c, g) {
+    const full = !g.is_open || g.claimed >= g.capacity;
+    const isSel = selected.has(g.id);
+    const conflict = isSel && clashesWithSelection(g);
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "group" + (full ? " full" : "") + (isSel ? " selected" : "");
+    let status, cls;
+    if (full) { status = "Filled"; cls = "s-full"; }
+    else if (conflict) { status = "Time clash with another pick"; cls = "s-conflict"; }
+    else { status = (g.capacity > 1 ? `${g.capacity - g.claimed} of ${g.capacity} open` : "Open"); cls = "s-open"; }
+    el.innerHTML = `
+      <div class="glabel">${g.label}
+        <span class="check">${isSel ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' : ""}</span>
+      </div>
+      <div class="gtimes">${fmtTimes(g) || "&nbsp;"}</div>
+      <div class="gstatus ${cls}"><span class="dotstat"></span>${status}</div>`;
+    if (!full) el.addEventListener("click", () => toggle(c, g));
+    return el;
+  }
+
+  function toggle(c, g) {
+    if (selected.has(g.id)) selected.delete(g.id);
+    else selected.set(g.id, { code: c.code, title: c.title, label: g.label, group: g });
+    renderCatalogue();
+    renderCart();
+  }
+
+  function renderCart() {
+    const cart = $("cart");
+    if (!selected.size) { cart.style.display = "none"; return; }
+    cart.style.display = "block";
+    $("seltags").innerHTML = [...selected.entries()].map(([id, s]) =>
+      `<span class="seltag">${s.code} ${s.label}<button data-id="${id}" aria-label="Remove">×</button></span>`
+    ).join("");
+    $("seltags").querySelectorAll("button").forEach((b) =>
+      b.addEventListener("click", () => { selected.delete(b.dataset.id); renderCatalogue(); renderCart(); })
+    );
+  }
+
+  // ---------- details modal + claim ----------
+  function anyClash() {
+    const arr = [...selected.values()].map((s) => s.group);
+    for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++)
+      if (clash(arr[i], arr[j])) return true;
+    return false;
+  }
+
+  function openModal() {
+    if (!settings.registration_open) { notify("err", "Registration is currently closed."); return; }
+    const list = [...selected.values()].map((s) => `<li>${s.code} ${s.label} — ${s.title}</li>`).join("");
+    const warn = anyClash()
+      ? `<div class="notice err" style="margin-top:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg><div>Some of your selected groups overlap in time. You can still continue, but please double-check you can attend all of them.</div></div>`
+      : "";
+    $("modal-body").innerHTML = `
+      <p style="margin-top:0;font-size:14px;color:#374151">You are registering to tutor:</p>
+      <ul style="margin:0 0 8px;padding-left:20px;font-size:14px">${list}</ul>
+      ${warn}
+      <div id="form-err"></div>
+      <div class="field"><label>Full name <span class="req">*</span></label><input id="f-name" type="text" autocomplete="name"></div>
+      <div class="row2">
+        <div class="field"><label>Email</label><input id="f-email" type="email" autocomplete="email" placeholder="name@maastrichtuniversity.nl"></div>
+        <div class="field"><label>Phone</label><input id="f-phone" type="tel" autocomplete="tel"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>I am a…</label>
+          <select id="f-type">
+            <option value="">Select…</option>
+            <option>PhD candidate</option>
+            <option>MSP alumnus / alumna</option>
+            <option>Staff member</option>
+            <option>Master's student</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Department / affiliation</label><input id="f-aff" type="text" placeholder="e.g. FSE — Chemistry"></div>
+      </div>
+      <div class="field"><label>Anything we should know? (optional)</label><textarea id="f-note" placeholder="Availability notes, experience, preferences…"></textarea></div>
+      <button class="btn btn-navy" id="submit-claim" style="width:100%;justify-content:center">Confirm registration</button>
+      <p class="hint" style="text-align:center;margin-top:12px">By submitting you agree the MSP office may contact you about these tutorials.</p>`;
+    $("submit-claim").addEventListener("click", submitClaim);
+    showModal(true);
+    setTimeout(() => $("f-name").focus(), 50);
+  }
+
+  async function submitClaim() {
+    const name = $("f-name").value.trim();
+    const ferr = $("form-err");
+    ferr.innerHTML = "";
+    if (!name) { ferr.innerHTML = errBox("Please enter your full name."); $("f-name").focus(); return; }
+    const btn = $("submit-claim");
+    btn.disabled = true; btn.textContent = "Confirming…";
+    const info = {
+      name, email: $("f-email").value.trim(), phone: $("f-phone").value.trim(),
+      type: $("f-type").value, affiliation: $("f-aff").value.trim(), motivation: $("f-note").value.trim(),
+    };
+    try {
+      await MSP.claim([...selected.keys()], info);
+      successScreen(info.name);
+      selected.clear();
+      await reload();
+      renderCart();
+    } catch (e) {
+      const msgFn = MSP.CLAIM_MESSAGES[e.code];
+      const msg = msgFn ? msgFn(e.detail) : (e.message || "Something went wrong. Please try again.");
+      ferr.innerHTML = errBox(msg);
+      // if a group was taken/closed, drop it and refresh so the UI is honest
+      if (e.code === "GROUP_FULL" || e.code === "GROUP_CLOSED" || e.code === "GROUP_NOT_FOUND") {
+        for (const [id, s] of selected.entries())
+          if (s.label === e.detail) selected.delete(id);
+        await reload(); renderCart();
+        if (!selected.size) showModal(false);
+      }
+      btn.disabled = false; btn.textContent = "Confirm registration";
+    }
+  }
+
+  function successScreen(name) {
+    $("modal-title").textContent = "You're registered 🎉";
+    $("modal-body").innerHTML = `
+      <div class="notice ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <div>Thank you, ${name || "tutor"}. Your group(s) are now locked to you and the MSP office has the details. You can close this window.</div></div>
+      <button class="btn btn-ghost" id="done-btn" style="width:100%;justify-content:center">Back to the list</button>`;
+    $("done-btn").addEventListener("click", () => { showModal(false); $("modal-title").textContent = "Your details"; });
+  }
+
+  // ---------- misc ----------
+  const errBox = (m) => `<div class="notice err" style="margin:0 0 14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg><div>${m}</div></div>`;
+  function notify(kind, msg) {
+    $("notice-area").innerHTML = `<div class="notice ${kind}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg><div>${msg}</div></div>`;
+  }
+  function showModal(on) {
+    $("overlay").classList.toggle("active", on);
+    $("modal").classList.toggle("active", on);
+    document.body.style.overflow = on ? "hidden" : "";
+  }
+  $("overlay").addEventListener("click", () => showModal(false));
+  $("modal-close").addEventListener("click", () => showModal(false));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") showModal(false); });
+  $("continue-btn").addEventListener("click", openModal);
+  $("search").addEventListener("input", (e) => { search = e.target.value.trim().toLowerCase(); renderCatalogue(); });
+  $("only-open").addEventListener("change", (e) => { onlyOpen = e.target.checked; renderCatalogue(); });
+
+  // ---------- load + realtime ----------
+  async function reload() {
+    catalogue = await MSP.getCatalogue();
+    settings = await MSP.getSettings();
+    // drop any selections that someone else just took (so the UI stays honest)
+    const allGroups = catalogue.flatMap((c) => c.groups);
+    let bumped = [];
+    for (const [id, s] of selected.entries()) {
+      const g = allGroups.find((x) => x.id === id);
+      if (!g || !g.is_open || g.claimed >= g.capacity) { selected.delete(id); bumped.push(s.code + " " + s.label); }
+    }
+    if (bumped.length) notify("err", `${bumped.join(", ")} was just taken by someone else and removed from your selection.`);
+    renderTabs();
+    renderCatalogue();
+  }
+
+  async function init() {
+    if (MSP.mode === "preview") {
+      notify("info", "<strong>Preview mode.</strong> The catalogue is real but live sign-ups are off until Supabase is connected (see <code>app/assets/config.js</code>).");
+    }
+    await reload();
+    if (settings.banner_message) notify("info", settings.banner_message);
+    if (!settings.registration_open) notify("err", "Registration is currently closed by the MSP office.");
+    MSP.subscribe(async () => { await reload(); renderCart(); });
+  }
+
+  init().catch((e) => { console.error(e); notify("err", "Could not load the catalogue: " + (e.message || e)); $("catalogue").innerHTML = ""; });
+})();
+</script>
+</body>
+</html>
