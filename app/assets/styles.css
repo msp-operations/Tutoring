@@ -348,3 +348,13 @@ footer{background:var(--navy);color:#c5d0de;border-top:4px solid var(--accent)}
 .confetti i{position:absolute;top:-14px;width:8px;height:13px;border-radius:1px;
   will-change:transform;animation:confetti-fall linear forwards}
 @keyframes confetti-fall{to{transform:translateY(106vh) rotate(900deg);opacity:.85}}
+
+/* Feedback trigger (lives in the navy footer) */
+.fb-trigger{display:inline-flex;align-items:center;gap:8px;font:600 13.5px var(--sans);
+  color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);
+  border-radius:8px;padding:9px 14px;cursor:pointer;transition:background .15s,border-color .15s,transform .12s}
+.fb-trigger:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.4)}
+.fb-trigger:active{transform:translateY(1px)}
+.fb-trigger svg{width:16px;height:16px}
+.fb-trigger-float{position:fixed;right:18px;bottom:18px;z-index:60;color:#fff;
+  background:var(--navy);border-color:var(--navy-2);box-shadow:0 12px 28px -12px rgba(0,28,61,.6)}

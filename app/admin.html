@@ -86,6 +86,20 @@
     <p class="lead">Adjust how many tutors a group needs, or close a group. Releasing a tutor reopens their group instantly for everyone.</p>
     <div class="tabs" id="adm-period-tabs" style="margin-top:18px"></div>
     <div id="adm-groups"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:48px 0 8px">
+      <h2 class="section" style="margin:0">Website feedback</h2>
+      <button class="btn btn-ghost" id="fb-csv-btn">Export CSV</button>
+    </div>
+    <p class="lead">What tutors and visitors told us through the “Share feedback” link. Tick “Done” once handled.</p>
+    <div style="overflow-x:auto;margin-top:16px">
+      <table class="data" id="fb-table">
+        <thead><tr>
+          <th>When</th><th>Type</th><th>Feedback</th><th>From</th><th>Page</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody id="fb-tbody"></tbody>
+      </table>
+    </div>
   </div>
 </main>
 
@@ -103,7 +117,8 @@
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
-  let catalogue = [], regs = [], settings = {}, admPeriod = "P1";
+  let catalogue = [], regs = [], settings = {}, admPeriod = "P1", feedback = [];
+  const esc = (s) => (s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"));
 
   function notify(kind, msg, where) {
     (where || $("notice-area")).innerHTML = `<div class="notice ${kind}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg><div>${msg}</div></div>`;
@@ -149,7 +164,42 @@
     [catalogue, settings] = await Promise.all([MSP.getCatalogue(), MSP.getSettings()]);
     try { regs = await MSP.admin.listRegistrations(); }
     catch (e) { notify("err", "Could not load registrations: " + (e.message || e)); regs = []; }
-    renderRegToggle(); renderStats(); renderPeriodFilters(); renderTable(); renderAdmGroups();
+    try { feedback = await MSP.admin.listFeedback(); }
+    catch (e) { feedback = []; }
+    renderRegToggle(); renderStats(); renderPeriodFilters(); renderTable(); renderAdmGroups(); renderFeedback();
+  }
+
+  // ---------- feedback ----------
+  function renderFeedback() {
+    const body = $("fb-tbody");
+    if (!feedback.length) { body.innerHTML = `<tr><td colspan="7" style="color:var(--muted);padding:20px">No feedback yet.</td></tr>`; return; }
+    const catPill = { Problem: "amber", Compliment: "green", Suggestion: "grey", Other: "grey" };
+    body.innerHTML = feedback.map((f) => {
+      const when = new Date(f.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+      const from = [f.name, f.email].filter(Boolean).map(esc).join("<br>") || '<span style="color:var(--muted)">anonymous</span>';
+      const status = f.handled ? '<span class="pill green">done</span>' : '<span class="pill amber">new</span>';
+      return `<tr style="${f.handled ? "opacity:.6" : ""}">
+        <td style="white-space:nowrap">${when}</td>
+        <td><span class="pill ${catPill[f.category] || "grey"}">${esc(f.category || "")}</span></td>
+        <td style="max-width:360px;white-space:pre-wrap">${esc(f.message || "")}</td>
+        <td style="font-size:12.5px">${from}</td>
+        <td style="font-size:12.5px;color:var(--muted)">${esc(f.page || "")}</td>
+        <td>${status}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" data-fb-toggle="${f.id}" data-handled="${f.handled}">${f.handled ? "Reopen" : "Mark done"}</button>
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" data-fb-del="${f.id}" aria-label="Delete">Delete</button>
+        </td>
+      </tr>`;
+    }).join("");
+    body.querySelectorAll("[data-fb-toggle]").forEach((b) => b.addEventListener("click", async () => {
+      try { await MSP.admin.setFeedbackHandled(b.dataset.fbToggle, b.dataset.handled !== "true"); await loadAll(); }
+      catch (e) { notify("err", "Could not update feedback: " + (e.message || e)); }
+    }));
+    body.querySelectorAll("[data-fb-del]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Delete this feedback permanently?")) return;
+      try { await MSP.admin.deleteFeedback(b.dataset.fbDel); await loadAll(); }
+      catch (e) { notify("err", "Could not delete: " + (e.message || e)); }
+    }));
   }
 
   function renderRegToggle() {
@@ -284,6 +334,18 @@
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "msp-tutor-registrations-" + new Date().toISOString().slice(0, 10) + ".csv";
+    a.click();
+  });
+
+  $("fb-csv-btn").addEventListener("click", () => {
+    const head = ["When", "Type", "Feedback", "Name", "Email", "Page", "Handled"];
+    const esc2 = (v) => `"${(v == null ? "" : String(v)).replace(/"/g, '""')}"`;
+    const lines = [head.join(",")];
+    feedback.forEach((f) => lines.push([f.created_at, f.category, f.message, f.name, f.email, f.page, f.handled].map(esc2).join(",")));
+    const blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "msp-feedback-" + new Date().toISOString().slice(0, 10) + ".csv";
     a.click();
   });
 

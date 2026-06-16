@@ -94,6 +94,26 @@
     return data;
   };
 
+  // ---- feedback -----------------------------------------------------------
+  // Saves website feedback via the submit_feedback() function (the only public
+  // write path — there is no table INSERT policy). Email forwarding to the
+  // office is handled SERVER-SIDE by an optional Database Webhook → Edge
+  // Function (see app/supabase/FEEDBACK-SETUP.md), so the browser never holds
+  // the email key and saving always works even before email is set up.
+  MSP.submitFeedback = async function (fb) {
+    if (!client) { const e = new Error("PREVIEW_MODE"); e.code = "PREVIEW_MODE"; throw e; }
+    const { data, error } = await client.rpc("submit_feedback", {
+      p_message: fb.message,
+      p_category: fb.category || "Suggestion",
+      p_name: fb.name || null,
+      p_email: fb.email || null,
+      p_page: fb.page || null,
+      p_user_agent: (navigator && navigator.userAgent) || null,
+    });
+    if (error) { const s = shapeError(error); const e = new Error(s.raw); e.code = s.code; e.detail = s.detail; throw e; }
+    return data; // new feedback id
+  };
+
   // ---- realtime -----------------------------------------------------------
   MSP.subscribe = function (onChange) {
     if (!client) return () => {};
@@ -147,6 +167,20 @@
       const patch = { registration_open: open };
       if (banner !== undefined) patch.banner_message = banner;
       const { error } = await client.from("app_settings").update(patch).eq("id", 1);
+      if (error) throw error;
+    },
+    async listFeedback() {
+      const { data, error } = await client
+        .from("feedback").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    async setFeedbackHandled(id, handled) {
+      const { error } = await client.from("feedback").update({ handled }).eq("id", id);
+      if (error) throw error;
+    },
+    async deleteFeedback(id) {
+      const { error } = await client.from("feedback").delete().eq("id", id);
       if (error) throw error;
     },
   };
