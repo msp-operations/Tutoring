@@ -23,7 +23,6 @@
     <a href="index.html" class="logos" aria-label="Maastricht University, Faculty of Science and Engineering — home">
       <img class="um-logo" src="assets/img/um-fse-logo.png" alt="Maastricht University — Faculty of Science and Engineering">
       <span class="divider"></span>
-      <img class="msp-mark" src="assets/img/msp-logo.png" alt="">
       <span class="lockup-text">Tutor Registration<small>Maastricht Science Programme</small></span>
     </a>
     <nav>
@@ -199,47 +198,115 @@
   }
 
   // ---------- TIMETABLE (Mon–Fri × time slots) ----------
+  // Interchangeable groups (same course + identical weekly schedule) are
+  // collapsed into ONE chip with a count, so a cell shows a handful of chips
+  // instead of twenty. Clicking a multi-group chip opens a small picker.
   const DAY_ORDER = [["mon", "Monday"], ["tue", "Tuesday"], ["wed", "Wednesday"], ["thu", "Thursday"], ["fri", "Friday"]];
+  const DAYIDX = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4 };
+  function scheduleLabel(g) {
+    return sessStr(g).slice()
+      .sort((a, b) => (DAYIDX[a.d] - DAYIDX[b.d]) || (toMin(a.start) - toMin(b.start)))
+      .map((s) => g_day(s.d) + " " + s.start).join(" · ");
+  }
+  let ttBuckets = [];
   function renderTimetable() {
+    closeChooser();
     const host = $("timetable");
     const courses = catalogue.filter((c) => c.period === period && matchesSearch(c));
-    const slotMap = new Map();          // start "HH:MM" -> latest end seen
-    const cell = {};                    // "d|start" -> { open:[{c,g}], filled:int }
+    const slotMap = new Map();
+    const cells = {};                   // "d|start" -> { buckets:{sig:bucket}, filled:int }
     courses.forEach((c) => c.groups.forEach((g) => {
       const isOpen = g.is_open && g.claimed < g.capacity;
+      const label = scheduleLabel(g);
       sessStr(g).forEach((s) => {
         const prev = slotMap.get(s.start);
         if (prev == null || toMin(s.end) > toMin(prev)) slotMap.set(s.start, s.end);
-        const key = s.d + "|" + s.start;
-        const cur = cell[key] || (cell[key] = { open: [], filled: 0 });
-        if (isOpen) cur.open.push({ c, g }); else cur.filled++;
+        const ck = s.d + "|" + s.start;
+        const cell = cells[ck] || (cells[ck] = { buckets: {}, filled: 0 });
+        if (!isOpen) { cell.filled++; return; }
+        const bk = c.code + "|" + label;
+        const b = cell.buckets[bk] || (cell.buckets[bk] = { code: c.code, title: c.title, schedule: label, items: [] });
+        b.items.push({ c, g });
       });
     }));
     const slots = [...slotMap.entries()].sort((a, b) => toMin(a[0]) - toMin(b[0]));
     if (!slots.length) { host.innerHTML = `<div class="empty-state">No tutorial groups match your search for this period.</div>`; return; }
 
+    ttBuckets = [];
     let html = '<div class="tt-scroll"><div class="timetable">';
     html += '<div class="tt-corner"></div>' + DAY_ORDER.map((d) => `<div class="tt-day">${d[1].slice(0, 3)}</div>`).join("");
     slots.forEach(([start, end]) => {
       html += `<div class="tt-slot">${start}<small>${end}</small></div>`;
       DAY_ORDER.forEach(([dc]) => {
-        const c = cell[dc + "|" + start];
-        if (!c || (!c.open.length && !c.filled)) { html += '<div class="tt-cell empty"></div>'; return; }
-        let inner = c.open.map(({ c: co, g }) => {
-          const sel = selected.has(g.id) ? " selected" : "";
-          return `<button type="button" class="tt-chip${sel}" data-gid="${g.id}" aria-pressed="${selected.has(g.id)}" title="${esc(co.code + " " + co.title + " — " + g.label)}"><span class="tc-code">${esc(co.code)} ${esc(g.label)}</span><span class="tc-lab">${esc(co.title)}</span></button>`;
+        const cell = cells[dc + "|" + start];
+        if (!cell || (!Object.keys(cell.buckets).length && !cell.filled)) { html += '<div class="tt-cell empty"></div>'; return; }
+        let inner = Object.values(cell.buckets).map((b) => {
+          const selN = b.items.filter((x) => selected.has(x.g.id)).length;
+          const bi = ttBuckets.push(b) - 1;
+          const badge = b.items.length > 1 ? `<span class="tt-count">${b.items.length}</span>` : "";
+          const selTag = selN ? `<span class="tc-sel">${selN} selected</span>` : "";
+          return `<button type="button" class="tt-chip${selN ? " selected" : ""}" data-bi="${bi}" aria-pressed="${selN > 0}" title="${esc(b.code + " " + b.title + " — " + b.schedule)}"><span class="tc-top"><span class="tc-code">${esc(b.code)}</span>${badge}</span><span class="tc-lab">${esc(b.title)}</span>${selTag}</button>`;
         }).join("");
-        if (c.filled) inner += `<span class="taken">${c.filled} filled</span>`;
+        if (cell.filled) inner += `<span class="taken">${cell.filled} filled</span>`;
         html += `<div class="tt-cell">${inner}</div>`;
       });
     });
     html += "</div></div>";
-    html += `<div class="tt-legend"><span><i style="background:var(--blue-tint);border:1px solid var(--blue)"></i> Open — click to claim</span><span><i style="background:var(--accent)"></i> Your selection</span></div>`;
+    html += `<div class="tt-legend"><span><i style="background:var(--blue-tint);border:1px solid var(--blue)"></i> Open — click to choose</span><span><i style="background:var(--accent)"></i> Your selection</span><span>Number = groups open at that time</span></div>`;
     host.innerHTML = html;
     host.querySelectorAll(".tt-chip").forEach((btn) => {
-      const f = findGroup(btn.dataset.gid);
-      if (f) btn.addEventListener("click", () => toggle(f.c, f.g));
+      const b = ttBuckets[+btn.dataset.bi];
+      btn.addEventListener("click", () => {
+        if (b.items.length === 1) toggle(b.items[0].c, b.items[0].g);
+        else openChooser(b, btn);
+      });
     });
+  }
+
+  // ---------- timetable group picker ----------
+  let chooserEl = null;
+  function pickGroup(g, c) {
+    if (selected.has(g.id)) selected.delete(g.id);
+    else selected.set(g.id, { code: c.code, title: c.title, label: g.label, group: g });
+  }
+  function updateChip(anchor, b) {
+    const selN = b.items.filter((x) => selected.has(x.g.id)).length;
+    anchor.classList.toggle("selected", selN > 0);
+    anchor.setAttribute("aria-pressed", String(selN > 0));
+    let tag = anchor.querySelector(".tc-sel");
+    if (selN) { if (!tag) { tag = document.createElement("span"); tag.className = "tc-sel"; anchor.appendChild(tag); } tag.textContent = selN + " selected"; }
+    else if (tag) tag.remove();
+  }
+  function renderChoices(b, anchor) {
+    chooserEl.innerHTML = `<div class="tt-chooser-h">${esc(b.code)} · ${esc(b.schedule)}</div>` +
+      b.items.map(({ g }) => {
+        const sel = selected.has(g.id);
+        return `<button type="button" class="tt-choice${sel ? " selected" : ""}" data-gid="${g.id}">${esc(g.label)}<span>${sel ? "✓ selected" : "Open"}</span></button>`;
+      }).join("");
+    chooserEl.querySelectorAll(".tt-choice").forEach((btn) => btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const f = findGroup(btn.dataset.gid);
+      if (f) pickGroup(f.g, f.c);
+      updateChip(anchor, b); renderChoices(b, anchor); renderBoardStats(); renderCatalogue(); renderCart();
+    }));
+  }
+  function openChooser(b, anchor) {
+    closeChooser();
+    const r = anchor.getBoundingClientRect();
+    chooserEl = document.createElement("div");
+    chooserEl.className = "tt-chooser";
+    chooserEl.style.top = (r.bottom + window.scrollY + 6) + "px";
+    chooserEl.style.left = Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - 260) + "px";
+    document.body.appendChild(chooserEl);
+    renderChoices(b, anchor);
+    setTimeout(() => { document.addEventListener("click", onDocClick, true); document.addEventListener("keydown", onEsc); }, 0);
+  }
+  function onDocClick(e) { if (chooserEl && !chooserEl.contains(e.target) && !e.target.closest(".tt-chip")) closeChooser(); }
+  function onEsc(e) { if (e.key === "Escape") closeChooser(); }
+  function closeChooser() {
+    if (chooserEl) { chooserEl.remove(); chooserEl = null; }
+    document.removeEventListener("click", onDocClick, true);
+    document.removeEventListener("keydown", onEsc);
   }
 
   // ---------- COURSE LIST ----------
@@ -457,7 +524,7 @@
   $("search").addEventListener("input", (e) => { search = e.target.value.trim().toLowerCase(); renderAll(); });
   $("only-open").addEventListener("change", (e) => { onlyOpen = e.target.checked; renderAll(); });
   $("view-toggle").querySelectorAll("button").forEach((b) =>
-    b.addEventListener("click", () => { view = b.dataset.v; applyView(); }));
+    b.addEventListener("click", () => { view = b.dataset.v; renderAll(); }));
 
   // ---------- load + realtime ----------
   async function reload() {
