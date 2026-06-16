@@ -1,0 +1,101 @@
+<!doctype html>
+<!--
+  index.html — landing page for the MSP Tutor Registration tool.
+  Static; no configuration needed here. See app/assets/config.js to connect Supabase.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutor Registration — Maastricht Science Programme</title>
+<meta name="description" content="Register to tutor a course tutorial group at the Maastricht Science Programme. First come, first served.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="logos" aria-label="MSP home">
+      <span class="wordmark">Maastricht Science Programme<small>Tutor Registration</small></span>
+    </a>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <a href="register.html">Register to tutor</a>
+      <a href="admin.html">Office login</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="dot"></span> Maastricht Science Programme · <span id="ay"></span></div>
+    <h1>Become a tutor at MSP.</h1>
+    <p>Pick the course and tutorial group(s) you would like to tutor. Groups are assigned on a <strong>first-come, first-served</strong> basis — once a group is taken it disappears for everyone, so what you see is always live.</p>
+    <a href="register.html" class="btn btn-accent">
+      See available groups
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+<main>
+  <div id="preview-banner"></div>
+
+  <h2 class="section">How it works</h2>
+  <p class="lead">A short, structured sign-up — no spreadsheets, no back-and-forth emails. The whole process takes a couple of minutes.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg></div>
+      <h3>1 · Browse</h3>
+      <p>Open the registration page, choose period 1 or 2, and expand a course to see its tutorial groups with days and times.</p>
+    </div>
+    <div class="card">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+      <h3>2 · Select</h3>
+      <p>Tick the group(s) you want. We instantly flag any time clashes between your choices so you don't double-book yourself.</p>
+    </div>
+    <div class="card">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h3>3 · Confirm</h3>
+      <p>Add your details and submit. The group is locked to you immediately. If two people pick the same group at once, only the first is confirmed.</p>
+    </div>
+  </div>
+
+  <h2 class="section" style="margin-top:48px">Who can tutor?</h2>
+  <p class="lead">Tutoring positions are open to eligible PhD candidates, MSP alumni and staff. If you have been invited by the MSP office or by Matt Baker / Ian Anthony, you are in the right place. If you are unsure whether you are eligible, email the office before registering.</p>
+
+  <div style="margin-top:28px">
+    <a href="register.html" class="btn btn-navy">Start registration
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div>Maastricht Science Programme · Faculty of Science and Engineering</div>
+    <div>Questions? <a id="contact" href="#">contact the office</a></div>
+    <div class="copy">© Maastricht Science Programme</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/config.js"></script>
+<script src="assets/demo-data.js"></script>
+<script src="assets/supabase.js"></script>
+<script>
+  document.getElementById("ay").textContent = (window.MSP_CONFIG && MSP_CONFIG.ACADEMIC_YEAR) || "";
+  const email = (window.MSP_CONFIG && MSP_CONFIG.CONTACT_EMAIL) || "";
+  const c = document.getElementById("contact"); c.href = "mailto:" + email; c.textContent = email || "the office";
+  if (window.MSP && MSP.mode === "preview") {
+    document.getElementById("preview-banner").innerHTML =
+      '<div class="notice info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>'
+      + '<div><strong>Preview mode.</strong> The catalogue below is real, but live sign-ups are off until Supabase is connected (see <code>app/assets/config.js</code>).</div></div>';
+  }
+</script>
+</body>
+</html>
