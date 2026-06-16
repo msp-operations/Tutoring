@@ -1,11 +1,11 @@
 /* ==========================================================================
-   CONFIGURE ME  —  the only file you normally need to edit.
+   CONFIGURE ME  -  the only file you normally need to edit.
    --------------------------------------------------------------------------
    1. Create a free project at https://supabase.com (choose an EU region,
       e.g. Frankfurt, so tutor data stays in the EU).
    2. In the Supabase dashboard go to:  Project Settings > API
    3. Copy the "Project URL" and the "anon public" key below.
-   4. The anon key is SAFE to publish — it can only do what the database's
+   4. The anon key is SAFE to publish - it can only do what the database's
       Row-Level-Security rules allow (read availability; never read who
       registered). See app/supabase/schema.sql.
 

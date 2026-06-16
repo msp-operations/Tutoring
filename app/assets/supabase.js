@@ -1,9 +1,9 @@
 /* ==========================================================================
-   MSP Tutor Registration — data layer (window.MSP)
+   MSP Tutor Registration - data layer (window.MSP)
    --------------------------------------------------------------------------
    One small API used by index / register / admin pages. It runs in two modes:
-     • "live"    — talks to Supabase (real first-come-first-serve + admin).
-     • "preview" — config not filled in yet; reads app/assets/demo-data.js so
+     • "live"    - talks to Supabase (real first-come-first-serve + admin).
+     • "preview" - config not filled in yet; reads app/assets/demo-data.js so
                     the site is fully browsable offline. Claims are disabled.
    ========================================================================== */
 (function () {
@@ -42,7 +42,7 @@
   // Returns: [{ id, code, title, period, department, groups:[{id,label,day1,...,capacity,claimed,is_open}] }]
   MSP.getCatalogue = async function () {
     if (!client) {
-      // preview mode — synthesise ids from the bundled dataset
+      // preview mode - synthesise ids from the bundled dataset
       const demo = window.MSP_DEMO_DATA || [];
       return demo.map((c, ci) => ({
         id: "demo-c-" + ci, code: c.code, title: c.title, period: c.period, department: c.department,
@@ -96,8 +96,8 @@
 
   // ---- feedback -----------------------------------------------------------
   // Saves website feedback via the submit_feedback() function (the only public
-  // write path — there is no table INSERT policy). Email forwarding to the
-  // office is handled SERVER-SIDE by an optional Database Webhook → Edge
+  // write path - there is no table INSERT policy). Email forwarding to the
+  // office is handled SERVER-SIDE by an optional Database Webhook -> Edge
   // Function (see app/supabase/FEEDBACK-SETUP.md), so the browser never holds
   // the email key and saving always works even before email is set up.
   MSP.submitFeedback = async function (fb) {
@@ -187,7 +187,7 @@
 
   // human-readable messages for claim failures
   MSP.CLAIM_MESSAGES = {
-    GROUP_FULL: (d) => `Group ${d} was just taken by someone else. It has been removed from your selection — please pick another.`,
+    GROUP_FULL: (d) => `Group ${d} was just taken by someone else. It has been removed from your selection - please pick another.`,
     GROUP_CLOSED: (d) => `Group ${d} has been closed by the office. Please pick another.`,
     REGISTRATION_CLOSED: () => "Registration is currently closed. Please contact the MSP office.",
     NAME_REQUIRED: () => "Please enter your full name.",

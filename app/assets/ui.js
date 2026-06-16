@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MSP Tutor Registration — UI niceties (count-up + confetti).
+   MSP Tutor Registration - UI niceties (count-up + confetti).
    Purely cosmetic and defensive: if anything is off it silently no-ops, and
    it fully respects prefers-reduced-motion. No app logic lives here.
    Exposes window.MSPUI = { countUp, confetti }.

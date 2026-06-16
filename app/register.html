@@ -1,15 +1,15 @@
 <!doctype html>
 <!--
-  register.html — the tutor-facing registration flow.
+  register.html - the tutor-facing registration flow.
   Shows live availability, lets a tutor pick one or more tutorial groups,
   warns about time clashes, and claims them atomically via Supabase.
-  VISUAL note: the hero is the live availability board + Mon–Fri timetable.
+  VISUAL note: the hero is the live availability board + Mon-Fri timetable.
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Register to tutor — Maastricht Science Programme</title>
+<title>Register to tutor - Maastricht Science Programme</title>
 <link rel="icon" type="image/png" href="assets/img/msp-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,8 +20,8 @@
 
 <header class="topbar">
   <div class="topbar-inner">
-    <a href="index.html" class="logos" aria-label="Maastricht University, Faculty of Science and Engineering — home">
-      <img class="um-logo" src="assets/img/um-fse-logo.png" alt="Maastricht University — Faculty of Science and Engineering">
+    <a href="index.html" class="logos" aria-label="Maastricht University, Faculty of Science and Engineering - home">
+      <img class="um-logo" src="assets/img/um-fse-logo.png" alt="Maastricht University - Faculty of Science and Engineering">
       <span class="divider"></span>
       <span class="lockup-text">Tutor Registration<small>Maastricht Science Programme</small></span>
     </a>
@@ -40,7 +40,7 @@
       <div>
         <div class="board-eyebrow">Maastricht Science Programme · Tutoring</div>
         <h1>Tutorial groups open right now</h1>
-        <p class="sub">Claim the group(s) you want to tutor. First come, first served — once a group is taken it disappears for everyone, instantly.</p>
+        <p class="sub">Claim the group(s) you want to tutor. First come, first served - once a group is taken it disappears for everyone, instantly.</p>
         <p class="board-dates" id="board-dates"></p>
       </div>
       <img class="board-emblem" src="assets/img/msp-logo.png" alt="">
@@ -67,7 +67,7 @@
   </div>
 
   <div class="toolbar">
-    <input id="search" type="text" aria-label="Search courses" placeholder="Search course code, name or group (e.g. CHE1101, Physics, A3)…">
+    <input id="search" type="text" aria-label="Search courses" placeholder="Search course code, name or group (e.g. CHE1101, Physics, A3)...">
     <label><input type="checkbox" id="only-open"> Only show courses with open groups</label>
   </div>
 
@@ -155,7 +155,7 @@
     return false;
   }
   const fmtTimes = (g) => {
-    const part = (d, s, e) => (d && s && e) ? `${g_day(d)} ${s}–${e}` : "";
+    const part = (d, s, e) => (d && s && e) ? `${g_day(d)} ${s}-${e}` : "";
     return [part(g.day1, g.start1, g.end1), part(g.day2, g.start2, g.end2)].filter(Boolean).join(" · ");
   };
   function findGroup(gid) { for (const c of catalogue) for (const g of c.groups) if (g.id === gid) return { c, g }; return null; }
@@ -187,7 +187,7 @@
   }
 
   // ---------- live board stats ----------
-  const PERIOD_DATES = { P1: "31 August – 16 October 2026", P2: "26 October – 10 December 2026" };
+  const PERIOD_DATES = { P1: "31 August - 16 October 2026", P2: "26 October - 10 December 2026" };
   function renderBoardStats() {
     const gs = catalogue.filter((c) => c.period === period).flatMap((c) => c.groups);
     const open = gs.filter((g) => g.is_open && g.claimed < g.capacity).length;
@@ -209,7 +209,7 @@
     });
   }
 
-  // ---------- TIMETABLE (Mon–Fri × time slots) ----------
+  // ---------- TIMETABLE (Mon-Fri × time slots) ----------
   // Interchangeable groups (same course + identical weekly schedule) are
   // collapsed into ONE chip with a count, so a cell shows a handful of chips
   // instead of twenty. Clicking a multi-group chip opens a small picker.
@@ -257,14 +257,14 @@
           const bi = ttBuckets.push(b) - 1;
           const badge = b.items.length > 1 ? `<span class="tt-count">${b.items.length}</span>` : "";
           const selTag = selN ? `<span class="tc-sel">${selN} selected</span>` : "";
-          return `<button type="button" class="tt-chip${selN ? " selected" : ""}" data-bi="${bi}" aria-pressed="${selN > 0}" title="${esc(b.code + " " + b.title + " — " + b.schedule)}"><span class="tc-top"><span class="tc-code">${esc(b.code)}</span>${badge}</span><span class="tc-lab">${esc(b.title)}</span>${selTag}</button>`;
+          return `<button type="button" class="tt-chip${selN ? " selected" : ""}" data-bi="${bi}" aria-pressed="${selN > 0}" title="${esc(b.code + " " + b.title + " - " + b.schedule)}"><span class="tc-top"><span class="tc-code">${esc(b.code)}</span>${badge}</span><span class="tc-lab">${esc(b.title)}</span>${selTag}</button>`;
         }).join("");
         if (cell.filled) inner += `<span class="taken">${cell.filled} filled</span>`;
         html += `<div class="tt-cell">${inner}</div>`;
       });
     });
     html += "</div></div>";
-    html += `<div class="tt-legend"><span><i style="background:var(--blue-tint);border:1px solid var(--blue)"></i> Open — click to choose</span><span><i style="background:var(--accent)"></i> Your selection</span><span>Number = groups open at that time</span></div>`;
+    html += `<div class="tt-legend"><span><i style="background:var(--blue-tint);border:1px solid var(--blue)"></i> Open - click to choose</span><span><i style="background:var(--accent)"></i> Your selection</span><span>Number = groups open at that time</span></div>`;
     host.innerHTML = html;
     host.querySelectorAll(".tt-chip").forEach((btn) => {
       const b = ttBuckets[+btn.dataset.bi];
@@ -444,7 +444,7 @@
 
   function openModal() {
     if (!settings.registration_open) { notify("err", "Registration is currently closed."); return; }
-    const list = [...selected.values()].map((s) => `<li>${esc(s.code)} ${esc(s.label)} — ${esc(s.title)}</li>`).join("");
+    const list = [...selected.values()].map((s) => `<li>${esc(s.code)} ${esc(s.label)} - ${esc(s.title)}</li>`).join("");
     const warn = anyClash()
       ? `<div class="notice err" style="margin-top:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg><div>Some of your selected groups overlap in time. You can still continue, but please double-check you can attend all of them.</div></div>`
       : "";
@@ -459,9 +459,9 @@
         <div class="field"><label for="f-phone">Phone</label><input id="f-phone" type="tel" autocomplete="tel"></div>
       </div>
       <div class="row2">
-        <div class="field"><label for="f-type">I am a…</label>
+        <div class="field"><label for="f-type">I am a...</label>
           <select id="f-type">
-            <option value="">Select…</option>
+            <option value="">Select...</option>
             <option>PhD candidate</option>
             <option>MSP alumnus / alumna</option>
             <option>Staff member</option>
@@ -469,9 +469,9 @@
             <option>Other</option>
           </select>
         </div>
-        <div class="field"><label for="f-aff">Department / affiliation</label><input id="f-aff" type="text" placeholder="e.g. FSE — Chemistry"></div>
+        <div class="field"><label for="f-aff">Department / affiliation</label><input id="f-aff" type="text" placeholder="e.g. FSE - Chemistry"></div>
       </div>
-      <div class="field"><label for="f-note">Anything we should know? (optional)</label><textarea id="f-note" placeholder="Availability notes, experience, preferences…"></textarea></div>
+      <div class="field"><label for="f-note">Anything we should know? (optional)</label><textarea id="f-note" placeholder="Availability notes, experience, preferences..."></textarea></div>
       <button class="btn btn-primary" id="submit-claim" style="width:100%">Confirm registration</button>
       <p class="hint" style="text-align:center;margin-top:12px">By submitting you agree the MSP office may contact you about these tutorials.</p>`;
     $("submit-claim").addEventListener("click", submitClaim);
@@ -485,7 +485,7 @@
     ferr.innerHTML = "";
     if (!name) { ferr.innerHTML = errBox("Please enter your full name."); $("f-name").focus(); return; }
     const btn = $("submit-claim");
-    btn.disabled = true; btn.textContent = "Confirming…";
+    btn.disabled = true; btn.textContent = "Confirming...";
     const info = {
       name, email: $("f-email").value.trim(), phone: $("f-phone").value.trim(),
       type: $("f-type").value, affiliation: $("f-aff").value.trim(), motivation: $("f-note").value.trim(),
@@ -511,7 +511,7 @@
   }
 
   function successScreen(name) {
-    $("modal-title").textContent = "You're registered 🎉";
+    $("modal-title").textContent = "You're registered";
     $("modal-body").innerHTML = `
       <div class="success-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
       <div class="notice ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>

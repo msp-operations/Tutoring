@@ -4,7 +4,7 @@ A live, first-come-first-served web tool for recruiting and allocating tutors to
 course tutorial groups at the **Maastricht Science Programme** (Faculty of Science
 & Engineering, Maastricht University). Eligible PhD candidates, MSP alumni and
 staff see which tutorial groups are open right now and claim one before anyone
-else — when a group is claimed it disappears for everyone, so no group is ever
+else - when a group is claimed it disappears for everyone, so no group is ever
 double-booked. The MSP office manages everything from a private dashboard.
 
 **Live site:** https://beebzoo.github.io/Tutoring/
@@ -13,14 +13,14 @@ double-booked. The MSP office manages everything from a private dashboard.
 
 ```
 .
-├─ index.html        Root redirect → /app/ (required by GitHub Pages)
+├─ index.html        Root redirect -> /app/ (required by GitHub Pages)
 ├─ app/              The website (this is what gets deployed)
 │   ├─ index.html        Landing page
-│   ├─ register.html     Tutor flow: browse open groups → pick → confirm
+│   ├─ register.html     Tutor flow: browse open groups -> pick -> confirm
 │   ├─ admin.html        Office dashboard (login, registrations, manage groups)
 │   ├─ assets/           config.js (your Supabase keys), styles, data layer, images
 │   ├─ supabase/         schema.sql, seed.sql (catalogue), update-course-details.sql
-│   └─ README.md         Full setup / "going live" guide  ← start here to deploy
+│   └─ README.md         Full setup / "going live" guide  <- start here to deploy
 ├─ reference/        Curated 2026/27 context (catalogue, coordinators, schedule,
 │                    procedures) + source files. Not deployed; for maintainers.
 └─ .github/workflows/pages.yml   Auto-deploy: every push to main rebuilds the site

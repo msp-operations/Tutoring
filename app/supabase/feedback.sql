@@ -1,5 +1,5 @@
 -- ============================================================================
--- MSP Tutor Registration — feedback feature (run ONCE in the Supabase SQL editor)
+-- MSP Tutor Registration - feedback feature (run ONCE in the Supabase SQL editor)
 -- ============================================================================
 -- Lets anyone leave website feedback. Submissions are PRIVATE: the public can
 -- only INSERT (via the submit_feedback function) and can never read what others
@@ -7,7 +7,7 @@
 -- office dashboard.
 --
 -- Mirrors the existing design:
---   * submit_feedback() is SECURITY DEFINER, like claim_groups() — there is no
+--   * submit_feedback() is SECURITY DEFINER, like claim_groups() - there is no
 --     public INSERT policy, so the function is the only public write path.
 --   * read/update/delete are admin-only via is_admin(), like `registration`.
 --
@@ -84,4 +84,4 @@ drop policy if exists feedback_admin_delete on feedback;
 create policy feedback_admin_read   on feedback for select using (is_admin());
 create policy feedback_admin_update on feedback for update using (is_admin());
 create policy feedback_admin_delete on feedback for delete using (is_admin());
--- NOTE: deliberately no INSERT policy — public writes go through submit_feedback().
+-- NOTE: deliberately no INSERT policy - public writes go through submit_feedback().

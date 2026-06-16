@@ -1,5 +1,5 @@
 -- ============================================================================
--- MSP Tutor Registration — database schema (Supabase / PostgreSQL)
+-- MSP Tutor Registration - database schema (Supabase / PostgreSQL)
 -- ============================================================================
 -- Run this ONCE in the Supabase SQL editor, then run seed.sql to load courses.
 --

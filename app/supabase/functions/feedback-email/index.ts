@@ -1,5 +1,5 @@
 // ============================================================================
-// feedback-email — Supabase Edge Function
+// feedback-email - Supabase Edge Function
 // ----------------------------------------------------------------------------
 // Emails each new website feedback to the MSP office. It is triggered by a
 // Supabase *Database Webhook* on INSERT into the `feedback` table (server to
@@ -40,12 +40,12 @@ Deno.serve(async (req) => {
   if (!f.message) return new Response("No feedback message", { status: 400 });
 
   if (!RESEND_API_KEY) {
-    console.error("RESEND_API_KEY not set — cannot send email.");
+    console.error("RESEND_API_KEY not set - cannot send email.");
     return new Response("Email not configured", { status: 500 });
   }
 
   const who = [f.name, f.email].filter(Boolean).join(" · ") || "Anonymous";
-  const subject = `MSP Tutoring feedback — ${f.category ?? "Feedback"}`;
+  const subject = `MSP Tutoring feedback - ${f.category ?? "Feedback"}`;
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;color:#101b2c;line-height:1.55">
       <h2 style="margin:0 0 4px;color:#001C3D">New website feedback</h2>
