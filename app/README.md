@@ -22,6 +22,7 @@ app/
 │   ├─ supabase.js       Data layer (live Supabase + offline preview)
 │   ├─ demo-data.js      Auto-generated catalogue for offline preview
 │   ├─ ui.js             Cosmetic niceties (count-up, confetti)
+│   ├─ disciplines.js    Per-subject flat icons + tints (from course code)
 │   └─ feedback.js       "Share feedback" widget (shared on every page)
 └─ supabase/
     ├─ schema.sql        Database tables, atomic claim, privacy rules

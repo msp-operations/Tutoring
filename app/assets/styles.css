@@ -349,6 +349,12 @@ footer{background:var(--navy);color:#c5d0de;border-top:4px solid var(--accent)}
   will-change:transform;animation:confetti-fall linear forwards}
 @keyframes confetti-fall{to{transform:translateY(106vh) rotate(900deg);opacity:.85}}
 
+/* Discipline icon chips (subtle per-subject tints; derived from course code) */
+.disc-chip{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;flex-shrink:0}
+.disc-chip svg{width:17px;height:17px}
+.disc-chip.sm{width:21px;height:21px;border-radius:6px}
+.disc-chip.sm svg{width:13px;height:13px}
+
 /* Feedback trigger (lives in the navy footer) */
 .fb-trigger{display:inline-flex;align-items:center;gap:8px;font:600 13.5px var(--sans);
   color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);

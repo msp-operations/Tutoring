@@ -111,9 +111,11 @@
 <script src="assets/demo-data.js"></script>
 <script src="assets/supabase.js"></script>
 <script src="assets/ui.js"></script>
+<script src="assets/disciplines.js"></script>
 <script src="assets/feedback.js"></script>
 <script>
 (function () {
+  const disc = (code, small) => (window.MSPDISC ? MSPDISC.chip(code, small) : "");
   let catalogue = [];
   let settings = { registration_open: true, banner_message: null };
   const selected = new Map();          // groupId -> { code, title, label, group }
@@ -257,7 +259,7 @@
           const bi = ttBuckets.push(b) - 1;
           const badge = b.items.length > 1 ? `<span class="tt-count">${b.items.length}</span>` : "";
           const selTag = selN ? `<span class="tc-sel">${selN} selected</span>` : "";
-          return `<button type="button" class="tt-chip${selN ? " selected" : ""}" data-bi="${bi}" aria-pressed="${selN > 0}" title="${esc(b.code + " " + b.title + " - " + b.schedule)}"><span class="tc-top"><span class="tc-code">${esc(b.code)}</span>${badge}</span><span class="tc-lab">${esc(b.title)}</span>${selTag}</button>`;
+          return `<button type="button" class="tt-chip${selN ? " selected" : ""}" data-bi="${bi}" aria-pressed="${selN > 0}" title="${esc(b.code + " " + b.title + " - " + b.schedule)}"><span class="tc-top">${disc(b.code, true)}<span class="tc-code">${esc(b.code)}</span>${badge}</span><span class="tc-lab">${esc(b.title)}</span>${selTag}</button>`;
         }).join("");
         if (cell.filled) inner += `<span class="taken">${cell.filled} filled</span>`;
         html += `<div class="tt-cell">${inner}</div>`;
@@ -339,6 +341,7 @@
       block.className = "course" + (isOpen ? " open" : "");
       block.innerHTML = `
         <button class="course-head" type="button" aria-expanded="${isOpen}">
+          ${disc(c.code)}
           <span class="course-code">${c.code}</span>
           <span class="course-title">${esc(c.title)}</span>${levelChip(c)}
           <span class="course-progress">
