@@ -283,3 +283,68 @@ footer{background:var(--navy);color:#c5d0de;border-top:4px solid var(--accent)}
 .spinner{width:24px;height:24px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:48px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty-state{text-align:center;padding:46px 20px;color:var(--muted);font-size:14px}
+
+/* ==========================================================================
+   PREMIUM POLISH — depth, motion & micro-interactions
+   On-brand (navy + UM orange), AA-safe, and fully disabled under
+   prefers-reduced-motion by the accessibility block near the top of this file.
+   ========================================================================== */
+
+/* Hero gains quiet depth: two soft brand-coloured glows + a faint tech grid.
+   All layers are dark-on-navy and sit BEHIND the content (board-inner z-index),
+   so body/number contrast is unchanged. */
+.board{position:relative;overflow:hidden;background:
+  radial-gradient(115% 135% at 88% -15%, rgba(0,162,219,.20), transparent 58%),
+  radial-gradient(90% 120% at -5% 120%, rgba(232,78,16,.16), transparent 55%),
+  var(--navy)}
+.board::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:36px 36px;
+  -webkit-mask-image:radial-gradient(circle at 82% 0%, #000, transparent 72%);
+          mask-image:radial-gradient(circle at 82% 0%, #000, transparent 72%);
+  opacity:.6}
+.board-inner{position:relative;z-index:1}
+
+/* Live stat tiles: subtle glass + hover, tabular figures so count-up doesn't jitter */
+.bstat{transition:transform .18s ease,border-color .18s,background .18s,box-shadow .18s}
+.bstat:hover{transform:translateY(-2px);background:rgba(255,255,255,.10)}
+.bstat.focal{background:linear-gradient(180deg,rgba(232,78,16,.16),rgba(232,78,16,.04))}
+.bstat .n{font-variant-numeric:tabular-nums}
+.bstat .n .num{font-variant-numeric:tabular-nums}
+
+/* Hover-lift micro-interactions (the app now feels alive to the touch) */
+.card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 32px -18px rgba(0,28,61,.5)}
+.group{transition:transform .14s ease,border-color .12s,background .12s,box-shadow .14s}
+.group:hover:not(.full){transform:translateY(-2px);box-shadow:0 12px 26px -16px rgba(0,28,61,.5)}
+.tt-chip{transition:transform .12s ease,border-color .12s,background .12s,box-shadow .12s}
+.tt-chip:hover{transform:translateY(-1px);box-shadow:0 9px 20px -12px rgba(0,28,61,.55)}
+.btn{transition:transform .12s ease,background .14s,border-color .14s,color .14s,box-shadow .16s}
+.btn-primary:hover{box-shadow:0 12px 26px -12px rgba(232,78,16,.6)}
+.btn-navy:hover{box-shadow:0 12px 26px -14px rgba(0,28,61,.7)}
+.btn:active{transform:translateY(1px)}
+.stat{transition:transform .18s ease,box-shadow .18s ease}
+.stat:hover{transform:translateY(-2px);box-shadow:0 12px 28px -18px rgba(0,28,61,.5)}
+
+/* Skeleton shimmer while the timetable loads — instant "modern app" read */
+.skeleton{display:grid;grid-template-columns:74px repeat(5,minmax(120px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.skeleton .sk-cell{background:#fff;min-height:54px;position:relative;overflow:hidden}
+.skeleton .sk-cell::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(0,28,61,.06),transparent);
+  animation:shimmer 1.3s infinite}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+
+/* The "claimed!" payoff: an animated check badge + a confetti burst */
+.success-badge{width:66px;height:66px;border-radius:50%;background:var(--green-bg);
+  display:grid;place-items:center;margin:2px auto 16px;animation:pop .42s cubic-bezier(.2,.8,.2,1.5) both}
+.success-badge svg{width:34px;height:34px;color:var(--green)}
+.success-badge svg path{stroke-dasharray:30;stroke-dashoffset:30;animation:draw .5s .16s ease forwards}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
+.confetti i{position:absolute;top:-14px;width:8px;height:13px;border-radius:1px;
+  will-change:transform;animation:confetti-fall linear forwards}
+@keyframes confetti-fall{to{transform:translateY(106vh) rotate(900deg);opacity:.85}}
