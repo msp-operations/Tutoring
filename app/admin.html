@@ -1,0 +1,294 @@
+<!doctype html>
+<!--
+  admin.html — MSP office dashboard. Login is a Supabase "magic link" emailed
+  to the address; only allow-listed admins (admin_user table) can see data.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Office dashboard — MSP Tutor Registration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="logos" aria-label="MSP home">
+      <span class="wordmark">Maastricht Science Programme<small>Office Dashboard</small></span>
+    </a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="register.html">Register to tutor</a>
+      <a href="#" id="signout" style="display:none">Sign out</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div id="notice-area"></div>
+
+  <!-- LOGIN -->
+  <div id="login">
+    <h2 class="section">Office login</h2>
+    <p class="lead">Enter your MSP email. We'll send you a one-time sign-in link — no password to remember. Only addresses on the office allow-list can see registrations.</p>
+    <div style="max-width:420px;margin-top:22px">
+      <div id="login-msg"></div>
+      <div class="field"><label>Email address</label><input id="login-email" type="email" placeholder="name@maastrichtuniversity.nl"></div>
+      <button class="btn btn-navy" id="login-btn" style="width:100%;justify-content:center">Email me a sign-in link</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dash" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+      <h2 class="section" style="margin:0">Tutor registrations</h2>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" id="refresh-btn">Refresh</button>
+        <button class="btn btn-ghost" id="csv-btn">Export CSV</button>
+      </div>
+    </div>
+
+    <div class="notice info" id="reg-toggle" style="align-items:center;justify-content:space-between">
+      <div style="display:flex;gap:12px;align-items:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+        <span id="reg-status">Registration is open.</span></div>
+      <button class="btn btn-ghost" id="toggle-reg">Close registration</button>
+    </div>
+
+    <div class="stat-grid" id="stats"></div>
+
+    <div class="toolbar">
+      <input id="adm-search" type="text" placeholder="Search name, email, course, group…">
+      <select id="adm-period" style="width:auto"><option value="">All periods</option></select>
+      <select id="adm-status" style="width:auto">
+        <option value="confirmed">Confirmed only</option>
+        <option value="">All statuses</option>
+        <option value="withdrawn">Withdrawn only</option>
+      </select>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="data" id="reg-table">
+        <thead><tr>
+          <th>Tutor</th><th>Type</th><th>Course</th><th>Group</th><th>Period</th><th>Registered</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody id="reg-body"></tbody>
+      </table>
+    </div>
+
+    <h2 class="section" style="margin-top:48px">Groups &amp; capacity</h2>
+    <p class="lead">Adjust how many tutors a group needs, or close a group. Releasing a tutor reopens their group instantly for everyone.</p>
+    <div class="tabs" id="adm-period-tabs" style="margin-top:18px"></div>
+    <div id="adm-groups"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div>Maastricht Science Programme · Office dashboard</div>
+    <div class="copy">© Maastricht Science Programme</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/config.js"></script>
+<script src="assets/demo-data.js"></script>
+<script src="assets/supabase.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let catalogue = [], regs = [], settings = {}, admPeriod = "P1";
+
+  function notify(kind, msg, where) {
+    (where || $("notice-area")).innerHTML = `<div class="notice ${kind}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg><div>${msg}</div></div>`;
+  }
+  const g_day = (d) => ({ mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri" }[(d||"").toLowerCase().slice(0,3)] || d || "");
+  const fmtTimes = (g) => {
+    const p = (d, s, e) => (d && s && e) ? `${g_day(d)} ${s}–${e}` : "";
+    return [p(g.day1,g.start1,g.end1), p(g.day2,g.start2,g.end2)].filter(Boolean).join(" · ");
+  };
+
+  // ---------- auth ----------
+  if (MSP.mode === "preview") {
+    notify("info", "<strong>Preview mode.</strong> The dashboard needs Supabase connected (see <code>app/assets/config.js</code>) to sign in and manage live registrations.");
+  }
+  $("login-btn").addEventListener("click", async () => {
+    const email = $("login-email").value.trim();
+    if (!email) { notify("err", "Please enter your email.", $("login-msg")); return; }
+    try {
+      await MSP.admin.signIn(email);
+      notify("ok", "Check your inbox for a sign-in link, then return to this page.", $("login-msg"));
+    } catch (e) { notify("err", e.message || "Could not send link.", $("login-msg")); }
+  });
+  $("signout").addEventListener("click", async (e) => { e.preventDefault(); await MSP.admin.signOut(); location.reload(); });
+
+  MSP.admin.onAuth(async (session) => { if (session) await enterDashboard(); });
+
+  async function enterDashboard() {
+    const allowed = await MSP.admin.isAllowed();
+    if (!allowed) {
+      notify("err", "This account is signed in but is not on the office allow-list. Ask an existing admin to add your email to <code>admin_user</code>.");
+      await MSP.admin.signOut();
+      return;
+    }
+    $("login").style.display = "none";
+    $("dash").style.display = "block";
+    $("signout").style.display = "inline";
+    await loadAll();
+    MSP.subscribe(loadAll);
+  }
+
+  // ---------- data ----------
+  async function loadAll() {
+    [catalogue, settings] = await Promise.all([MSP.getCatalogue(), MSP.getSettings()]);
+    try { regs = await MSP.admin.listRegistrations(); }
+    catch (e) { notify("err", "Could not load registrations: " + (e.message || e)); regs = []; }
+    renderRegToggle(); renderStats(); renderPeriodFilters(); renderTable(); renderAdmGroups();
+  }
+
+  function renderRegToggle() {
+    const open = settings.registration_open !== false;
+    $("reg-status").textContent = open ? "Registration is open to tutors." : "Registration is currently CLOSED to tutors.";
+    $("reg-toggle").className = "notice " + (open ? "ok" : "err") + " ";
+    $("reg-toggle").style.cssText = "align-items:center;justify-content:space-between";
+    const btn = $("toggle-reg");
+    btn.textContent = open ? "Close registration" : "Re-open registration";
+    btn.onclick = async () => { await MSP.admin.setRegistrationOpen(!open); await loadAll(); };
+  }
+
+  function confirmed(r) { return r.status === "confirmed"; }
+  function renderStats() {
+    const groups = catalogue.flatMap((c) => c.groups);
+    const filled = groups.filter((g) => g.claimed >= g.capacity).length;
+    const cReg = regs.filter(confirmed);
+    const tutors = new Set(cReg.map((r) => (r.tutor_email || r.tutor_name || "").toLowerCase())).size;
+    const stat = (n, l) => `<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+    $("stats").innerHTML =
+      stat(groups.length, "Tutorial groups") +
+      stat(filled, "Groups filled") +
+      stat(groups.length - filled, "Groups still open") +
+      stat(cReg.length, "Confirmed registrations") +
+      stat(tutors, "Distinct tutors");
+  }
+
+  function renderPeriodFilters() {
+    const periods = [...new Set(catalogue.map((c) => c.period))].sort();
+    $("adm-period").innerHTML = '<option value="">All periods</option>' + periods.map((p) => `<option>${p}</option>`).join("");
+    if (!periods.includes(admPeriod)) admPeriod = periods[0] || "P1";
+    $("adm-period-tabs").innerHTML = periods.map((p) =>
+      `<button class="${p === admPeriod ? "active" : ""}" data-p="${p}">Period ${p.replace(/^P/, "")}</button>`).join("");
+    $("adm-period-tabs").querySelectorAll("button").forEach((b) =>
+      b.addEventListener("click", () => { admPeriod = b.dataset.p; renderPeriodFilters(); renderAdmGroups(); }));
+  }
+
+  function filteredRegs() {
+    const q = $("adm-search").value.trim().toLowerCase();
+    const per = $("adm-period").value;
+    const st = $("adm-status").value;
+    return regs.filter((r) => {
+      const tg = r.tutorial_group || {}, co = tg.course || {};
+      if (st && r.status !== st) return false;
+      if (per && co.period !== per) return false;
+      if (q) {
+        const hay = [r.tutor_name, r.tutor_email, r.tutor_type, r.affiliation, co.code, co.title, tg.label].join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderTable() {
+    const body = $("reg-body");
+    const rows = filteredRegs();
+    if (!rows.length) { body.innerHTML = `<tr><td colspan="8" style="color:var(--muted);padding:20px">No registrations match.</td></tr>`; return; }
+    body.innerHTML = rows.map((r) => {
+      const tg = r.tutorial_group || {}, co = tg.course || {};
+      const when = new Date(r.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+      const pill = r.status === "confirmed" ? '<span class="pill green">confirmed</span>' : '<span class="pill grey">withdrawn</span>';
+      const action = r.status === "confirmed"
+        ? `<button class="btn btn-ghost" style="padding:6px 12px;font-size:12.5px" data-withdraw="${r.id}" data-label="${(co.code||'')+' '+(tg.label||'')}">Release</button>` : "";
+      return `<tr>
+        <td><strong>${r.tutor_name || ""}</strong>${r.tutor_email ? `<br><span style="color:var(--muted)">${r.tutor_email}</span>` : ""}${r.affiliation ? `<br><span style="color:var(--muted);font-size:12px">${r.affiliation}</span>` : ""}</td>
+        <td>${r.tutor_type || ""}</td>
+        <td>${co.code || ""}<br><span style="color:var(--muted);font-size:12px">${co.title || ""}</span></td>
+        <td>${tg.label || ""}</td>
+        <td>${co.period || ""}</td>
+        <td style="white-space:nowrap">${when}</td>
+        <td>${pill}</td>
+        <td>${action}</td>
+      </tr>`;
+    }).join("");
+    body.querySelectorAll("[data-withdraw]").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm(`Release ${b.dataset.label}? This reopens the group for other tutors.`)) return;
+      try { await MSP.admin.withdraw(b.dataset.withdraw); await loadAll(); }
+      catch (e) { notify("err", "Could not release: " + (e.message || e)); }
+    }));
+  }
+
+  function renderAdmGroups() {
+    const host = $("adm-groups");
+    const courses = catalogue.filter((c) => c.period === admPeriod);
+    const regByGroup = {};
+    regs.filter(confirmed).forEach((r) => (regByGroup[r.group_id] = regByGroup[r.group_id] || []).push(r));
+    host.innerHTML = courses.map((c) => `
+      <div class="course open" style="margin-top:14px">
+        <div class="course-head" style="cursor:default">
+          <span class="course-code">${c.code}</span><span class="course-title">${c.title}</span>
+        </div>
+        <div class="groups" style="display:grid">
+          ${c.groups.map((g) => {
+            const taken = (regByGroup[g.id] || []).map((r) => r.tutor_name).join(", ");
+            const full = g.claimed >= g.capacity;
+            return `<div class="group ${full ? "full" : ""}" style="cursor:default">
+              <div class="glabel">${g.label}</div>
+              <div class="gtimes">${fmtTimes(g) || "&nbsp;"}</div>
+              <div class="gstatus ${full ? "s-full" : "s-open"}"><span class="dotstat"></span>${g.claimed}/${g.capacity} filled${taken ? " · " + taken : ""}</div>
+              <div style="display:flex;gap:6px;margin-top:10px;align-items:center">
+                <label style="margin:0;font-size:11px;color:var(--muted)">Need</label>
+                <input type="number" min="0" value="${g.capacity}" data-cap="${g.id}" style="width:54px;padding:5px 7px">
+                <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" data-toggle="${g.id}" data-open="${g.is_open}">${g.is_open ? "Close" : "Open"}</button>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>`).join("");
+    host.querySelectorAll("[data-cap]").forEach((inp) => inp.addEventListener("change", async () => {
+      const v = Math.max(0, parseInt(inp.value || "0", 10));
+      try { await MSP.admin.updateGroup(inp.dataset.cap, { capacity: v }); await loadAll(); }
+      catch (e) { notify("err", "Could not update capacity: " + (e.message || e)); }
+    }));
+    host.querySelectorAll("[data-toggle]").forEach((b) => b.addEventListener("click", async () => {
+      try { await MSP.admin.updateGroup(b.dataset.toggle, { is_open: b.dataset.open !== "true" }); await loadAll(); }
+      catch (e) { notify("err", "Could not change group: " + (e.message || e)); }
+    }));
+  }
+
+  // ---------- CSV ----------
+  $("csv-btn").addEventListener("click", () => {
+    const rows = filteredRegs();
+    const head = ["Name", "Email", "Type", "Affiliation", "Phone", "Course code", "Course title", "Group", "Period", "Status", "Registered at", "Notes"];
+    const esc = (v) => `"${(v == null ? "" : String(v)).replace(/"/g, '""')}"`;
+    const lines = [head.join(",")];
+    rows.forEach((r) => {
+      const tg = r.tutorial_group || {}, co = tg.course || {};
+      lines.push([r.tutor_name, r.tutor_email, r.tutor_type, r.affiliation, r.phone, co.code, co.title, tg.label, co.period, r.status, r.created_at, r.motivation].map(esc).join(","));
+    });
+    const blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "msp-tutor-registrations-" + new Date().toISOString().slice(0, 10) + ".csv";
+    a.click();
+  });
+
+  $("refresh-btn").addEventListener("click", loadAll);
+  ["adm-search", "adm-period", "adm-status"].forEach((id) => $(id).addEventListener("input", renderTable));
+
+  // already signed in?
+  (async () => { if (await MSP.admin.session()) await enterDashboard(); })();
+})();
+</script>
+</body>
+</html>
