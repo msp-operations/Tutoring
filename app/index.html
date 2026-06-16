@@ -102,6 +102,7 @@
 <script src="assets/config.js"></script>
 <script src="assets/demo-data.js"></script>
 <script src="assets/supabase.js"></script>
+<script src="assets/ui.js"></script>
 <script>
   document.getElementById("ay").textContent = (window.MSP_CONFIG && MSP_CONFIG.ACADEMIC_YEAR) || "";
   const email = (window.MSP_CONFIG && MSP_CONFIG.CONTACT_EMAIL) || "";
@@ -120,9 +121,13 @@
       cat.forEach((c) => { const o = c.groups.filter((g) => g.is_open && g.claimed < g.capacity).length; byP[c.period] = (byP[c.period] || 0) + o; });
       const periods = Object.keys(byP).sort();
       const total = periods.reduce((a, p) => a + byP[p], 0);
-      let html = `<div class="bstat focal"><div class="n"><span class="live-dot"></span>${total}</div><div class="l">Groups open now</div></div>`;
-      periods.forEach((p) => { html += `<div class="bstat"><div class="n">${byP[p]}</div><div class="l">Open · Period ${p.replace(/^P/, "")}</div></div>`; });
+      let html = `<div class="bstat focal"><div class="n"><span class="live-dot"></span><span class="num" data-to="${total}" data-k="total">${total}</span></div><div class="l">Groups open now</div></div>`;
+      periods.forEach((p) => { html += `<div class="bstat"><div class="n"><span class="num" data-to="${byP[p]}" data-k="p${p}">${byP[p]}</span></div><div class="l">Open · Period ${p.replace(/^P/, "")}</div></div>`; });
       host.innerHTML = html;
+      host.querySelectorAll(".num").forEach((el) => {
+        if (window.MSPUI) MSPUI.countUp(el, el.dataset.to, "home-" + el.dataset.k);
+        else el.textContent = el.dataset.to;
+      });
       if (window.MSP && MSP.subscribe) MSP.subscribe(snapshot);
     } catch (e) { host.innerHTML = ""; }
   })();

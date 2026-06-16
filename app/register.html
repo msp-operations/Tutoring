@@ -110,6 +110,7 @@
 <script src="assets/config.js"></script>
 <script src="assets/demo-data.js"></script>
 <script src="assets/supabase.js"></script>
+<script src="assets/ui.js"></script>
 <script>
 (function () {
   let catalogue = [];
@@ -194,11 +195,17 @@
     const pNum = period.replace(/^P/, "");
     const dates = PERIOD_DATES[period];
     $("board-dates").textContent = dates ? `Period ${pNum} · ${dates}` : "";
+    const tile = (val, key, label, focal) =>
+      `<div class="bstat${focal ? " focal" : ""}"><div class="n">${focal ? '<span class="live-dot"></span>' : ""}<span class="num" data-to="${val}" data-k="${key}">${val}</span></div><div class="l">${label}</div></div>`;
     $("board-stats").innerHTML =
-      `<div class="bstat focal"><div class="n"><span class="live-dot"></span>${open}</div><div class="l">Open right now</div></div>` +
-      `<div class="bstat"><div class="n">${filled}</div><div class="l">Filled</div></div>` +
-      `<div class="bstat"><div class="n">${courses}</div><div class="l">Courses · P${pNum}</div></div>` +
-      `<div class="bstat"><div class="n">${gs.length}</div><div class="l">Groups total</div></div>`;
+      tile(open, "open", "Open right now", true) +
+      tile(filled, "filled", "Filled") +
+      tile(courses, "courses", "Courses · P" + pNum) +
+      tile(gs.length, "total", "Groups total");
+    $("board-stats").querySelectorAll(".num").forEach((el) => {
+      if (window.MSPUI) MSPUI.countUp(el, el.dataset.to, "reg-" + el.dataset.k);
+      else el.textContent = el.dataset.to;
+    });
   }
 
   // ---------- TIMETABLE (Mon–Fri × time slots) ----------
@@ -505,10 +512,12 @@
   function successScreen(name) {
     $("modal-title").textContent = "You're registered 🎉";
     $("modal-body").innerHTML = `
+      <div class="success-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
       <div class="notice ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
         <div>Thank you, ${esc(name) || "tutor"}. Your group(s) are now locked to you and the MSP office has the details. You can close this window.</div></div>
       <button class="btn btn-ghost" id="done-btn" style="width:100%">Back to the list</button>`;
     $("done-btn").addEventListener("click", () => { showModal(false); $("modal-title").textContent = "Your details"; });
+    if (window.MSPUI) MSPUI.confetti();
   }
 
   // ---------- misc ----------
@@ -531,6 +540,12 @@
     b.addEventListener("click", () => { view = b.dataset.v; renderAll(); }));
 
   // ---------- load + realtime ----------
+  function skeletonHTML() {
+    let cells = "";
+    for (let i = 0; i < 42; i++) cells += '<div class="sk-cell"></div>';
+    return `<div class="skeleton" role="status" aria-label="Loading availability">${cells}</div>`;
+  }
+
   async function reload() {
     catalogue = await MSP.getCatalogue();
     settings = await MSP.getSettings();
@@ -546,6 +561,7 @@
   }
 
   async function init() {
+    $("timetable").innerHTML = skeletonHTML();
     if (MSP.mode === "preview") {
       notify("info", "<strong>Preview mode.</strong> The catalogue is real but live sign-ups are off until Supabase is connected (see <code>app/assets/config.js</code>).");
     }
