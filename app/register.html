@@ -3,63 +3,86 @@
   register.html — the tutor-facing registration flow.
   Shows live availability, lets a tutor pick one or more tutorial groups,
   warns about time clashes, and claims them atomically via Supabase.
+  VISUAL note: the hero is the live availability board + Mon–Fri timetable.
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Register to tutor — Maastricht Science Programme</title>
+<link rel="icon" type="image/png" href="assets/img/msp-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-inner">
-    <a href="index.html" class="logos" aria-label="MSP home">
-      <span class="wordmark">Maastricht Science Programme<small>Tutor Registration</small></span>
+    <a href="index.html" class="logos" aria-label="Maastricht University, Faculty of Science and Engineering — home">
+      <img class="um-logo" src="assets/img/um-fse-logo.png" alt="Maastricht University — Faculty of Science and Engineering">
+      <span class="divider"></span>
+      <img class="msp-mark" src="assets/img/msp-logo.png" alt="">
+      <span class="lockup-text">Tutor Registration<small>Maastricht Science Programme</small></span>
     </a>
     <nav>
       <a href="index.html">Home</a>
-      <a href="register.html" class="active">Register to tutor</a>
+      <a href="register.html" class="active" aria-current="page">Register to tutor</a>
       <a href="admin.html">Office login</a>
     </nav>
   </div>
 </header>
 
-<section class="hero">
-  <div class="hero-inner">
-    <div class="eyebrow"><span class="dot"></span> Live availability</div>
-    <h1>Choose your tutorial group(s).</h1>
-    <p>Expand a course, tick the group(s) you want to tutor, then add your details. Filled groups update in real time.</p>
+<!-- THE HERO IS THE DATA: a flat live-availability board (no gradient glow). -->
+<section class="board" aria-label="Live availability">
+  <div class="board-inner">
+    <div class="board-head">
+      <div>
+        <div class="board-eyebrow">Maastricht Science Programme · Tutoring</div>
+        <h1>Tutorial groups open right now</h1>
+        <p class="sub">Claim the group(s) you want to tutor. First come, first served — once a group is taken it disappears for everyone, instantly.</p>
+      </div>
+      <img class="board-emblem" src="assets/img/msp-logo.png" alt="">
+    </div>
+    <div class="board-stats" id="board-stats" aria-live="polite"></div>
   </div>
 </section>
 
 <main>
   <div id="notice-area"></div>
 
-  <div class="tabs" id="period-tabs" role="tablist"></div>
-
-  <div class="toolbar">
-    <input id="search" type="text" placeholder="Search course code, name or group (e.g. CHE1101, Physics, A3)…">
-    <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--muted);margin:0">
-      <input type="checkbox" id="only-open" style="width:auto"> Only show courses with open groups
-    </label>
+  <div class="controls">
+    <div class="tabs" id="period-tabs" role="tablist" aria-label="Teaching period"></div>
+    <div class="viewtoggle" id="view-toggle" role="group" aria-label="Choose layout">
+      <button type="button" data-v="timetable" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 4v16M16 4v16"/></svg>
+        Timetable
+      </button>
+      <button type="button" data-v="list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Course list
+      </button>
+    </div>
   </div>
 
-  <div id="catalogue"><div class="spinner"></div></div>
+  <div class="toolbar">
+    <input id="search" type="text" aria-label="Search courses" placeholder="Search course code, name or group (e.g. CHE1101, Physics, A3)…">
+    <label><input type="checkbox" id="only-open"> Only show courses with open groups</label>
+  </div>
+
+  <div id="timetable"><div class="spinner" role="status" aria-label="Loading availability"></div></div>
+  <div id="catalogue" style="display:none"></div>
 </main>
 
 <!-- sticky selection bar -->
 <div class="cart" id="cart" style="display:none">
   <div class="cart-inner">
     <div>
-      <div style="font-size:12.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Your selection</div>
+      <div class="cap">Your selection</div>
       <div class="seltags" id="seltags"></div>
     </div>
-    <button class="btn btn-navy" id="continue-btn">Continue to your details
+    <button class="btn btn-primary" id="continue-btn">Continue to your details
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
     </button>
   </div>
@@ -67,7 +90,7 @@
 
 <!-- details modal -->
 <div class="modal-overlay" id="overlay"></div>
-<div class="modal" id="modal" role="dialog" aria-modal="true">
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <div class="head">
     <h3 id="modal-title">Your details</h3>
     <button class="close" id="modal-close" aria-label="Close">×</button>
@@ -77,8 +100,9 @@
 
 <footer>
   <div class="footer-inner">
-    <div>Maastricht Science Programme · Faculty of Science and Engineering</div>
-    <div class="copy">© Maastricht Science Programme</div>
+    <img class="f-msp" src="assets/img/msp-logo.png" alt="Maastricht Science Programme">
+    <div>Maastricht Science Programme · Faculty of Science and Engineering, Maastricht University</div>
+    <div class="copy">© Maastricht University</div>
   </div>
 </footer>
 
@@ -95,16 +119,25 @@
   let period = "P1";
   let search = "";
   let onlyOpen = false;
+  let view = "timetable";              // "timetable" | "list"
 
   const $ = (id) => document.getElementById(id);
+  const esc = (s) => (s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"));
 
-  // ---------- time-clash helpers ----------
+  // ---------- time helpers ----------
   const day3 = (d) => (d || "").toString().trim().toLowerCase().slice(0, 3);
   const toMin = (t) => { if (!t) return null; const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  const g_day = (d) => ({ mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" }[day3(d)] || d);
   function sessions(g) {
     const out = [];
     if (g.day1 && g.start1 && g.end1) out.push({ d: day3(g.day1), s: toMin(g.start1), e: toMin(g.end1) });
     if (g.day2 && g.start2 && g.end2) out.push({ d: day3(g.day2), s: toMin(g.start2), e: toMin(g.end2) });
+    return out;
+  }
+  function sessStr(g) {
+    const out = [];
+    if (g.day1 && g.start1 && g.end1) out.push({ d: day3(g.day1), start: g.start1, end: g.end1 });
+    if (g.day2 && g.start2 && g.end2) out.push({ d: day3(g.day2), start: g.start2, end: g.end2 });
     return out;
   }
   function clash(a, b) {
@@ -123,19 +156,7 @@
     const part = (d, s, e) => (d && s && e) ? `${g_day(d)} ${s}–${e}` : "";
     return [part(g.day1, g.start1, g.end1), part(g.day2, g.start2, g.end2)].filter(Boolean).join(" · ");
   };
-  const g_day = (d) => ({ mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" }[day3(d)] || d);
-
-  // ---------- rendering ----------
-  function renderTabs() {
-    const periods = [...new Set(catalogue.map((c) => c.period))].sort();
-    if (!periods.includes(period)) period = periods[0] || "P1";
-    $("period-tabs").innerHTML = periods.map((p) =>
-      `<button role="tab" class="${p === period ? "active" : ""}" data-p="${p}">Period ${p.replace(/^P/, "")}</button>`
-    ).join("");
-    $("period-tabs").querySelectorAll("button").forEach((b) =>
-      b.addEventListener("click", () => { period = b.dataset.p; renderTabs(); renderCatalogue(); })
-    );
-  }
+  function findGroup(gid) { for (const c of catalogue) for (const g of c.groups) if (g.id === gid) return { c, g }; return null; }
 
   function matchesSearch(c) {
     if (!search) return true;
@@ -143,6 +164,85 @@
     return hay.includes(search);
   }
 
+  // ---------- master render ----------
+  function renderAll() { renderBoardStats(); renderTimetable(); renderCatalogue(); applyView(); }
+
+  function applyView() {
+    $("timetable").style.display = view === "timetable" ? "" : "none";
+    $("catalogue").style.display = view === "list" ? "" : "none";
+    $("view-toggle").querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.v === view));
+  }
+
+  function renderTabs() {
+    const periods = [...new Set(catalogue.map((c) => c.period))].sort();
+    if (!periods.includes(period)) period = periods[0] || "P1";
+    $("period-tabs").innerHTML = periods.map((p) =>
+      `<button role="tab" aria-selected="${p === period}" class="${p === period ? "active" : ""}" data-p="${p}">Period ${p.replace(/^P/, "")}</button>`
+    ).join("");
+    $("period-tabs").querySelectorAll("button").forEach((b) =>
+      b.addEventListener("click", () => { period = b.dataset.p; renderTabs(); renderAll(); })
+    );
+  }
+
+  // ---------- live board stats ----------
+  function renderBoardStats() {
+    const gs = catalogue.filter((c) => c.period === period).flatMap((c) => c.groups);
+    const open = gs.filter((g) => g.is_open && g.claimed < g.capacity).length;
+    const filled = gs.length - open;
+    const courses = catalogue.filter((c) => c.period === period).length;
+    const pNum = period.replace(/^P/, "");
+    $("board-stats").innerHTML =
+      `<div class="bstat focal"><div class="n"><span class="live-dot"></span>${open}</div><div class="l">Open right now</div></div>` +
+      `<div class="bstat"><div class="n">${filled}</div><div class="l">Filled</div></div>` +
+      `<div class="bstat"><div class="n">${courses}</div><div class="l">Courses · P${pNum}</div></div>` +
+      `<div class="bstat"><div class="n">${gs.length}</div><div class="l">Groups total</div></div>`;
+  }
+
+  // ---------- TIMETABLE (Mon–Fri × time slots) ----------
+  const DAY_ORDER = [["mon", "Monday"], ["tue", "Tuesday"], ["wed", "Wednesday"], ["thu", "Thursday"], ["fri", "Friday"]];
+  function renderTimetable() {
+    const host = $("timetable");
+    const courses = catalogue.filter((c) => c.period === period && matchesSearch(c));
+    const slotMap = new Map();          // start "HH:MM" -> latest end seen
+    const cell = {};                    // "d|start" -> { open:[{c,g}], filled:int }
+    courses.forEach((c) => c.groups.forEach((g) => {
+      const isOpen = g.is_open && g.claimed < g.capacity;
+      sessStr(g).forEach((s) => {
+        const prev = slotMap.get(s.start);
+        if (prev == null || toMin(s.end) > toMin(prev)) slotMap.set(s.start, s.end);
+        const key = s.d + "|" + s.start;
+        const cur = cell[key] || (cell[key] = { open: [], filled: 0 });
+        if (isOpen) cur.open.push({ c, g }); else cur.filled++;
+      });
+    }));
+    const slots = [...slotMap.entries()].sort((a, b) => toMin(a[0]) - toMin(b[0]));
+    if (!slots.length) { host.innerHTML = `<div class="empty-state">No tutorial groups match your search for this period.</div>`; return; }
+
+    let html = '<div class="tt-scroll"><div class="timetable">';
+    html += '<div class="tt-corner"></div>' + DAY_ORDER.map((d) => `<div class="tt-day">${d[1].slice(0, 3)}</div>`).join("");
+    slots.forEach(([start, end]) => {
+      html += `<div class="tt-slot">${start}<small>${end}</small></div>`;
+      DAY_ORDER.forEach(([dc]) => {
+        const c = cell[dc + "|" + start];
+        if (!c || (!c.open.length && !c.filled)) { html += '<div class="tt-cell empty"></div>'; return; }
+        let inner = c.open.map(({ c: co, g }) => {
+          const sel = selected.has(g.id) ? " selected" : "";
+          return `<button type="button" class="tt-chip${sel}" data-gid="${g.id}" aria-pressed="${selected.has(g.id)}" title="${esc(co.code + " " + co.title + " — " + g.label)}"><span class="tc-code">${esc(co.code)} ${esc(g.label)}</span><span class="tc-lab">${esc(co.title)}</span></button>`;
+        }).join("");
+        if (c.filled) inner += `<span class="taken">${c.filled} filled</span>`;
+        html += `<div class="tt-cell">${inner}</div>`;
+      });
+    });
+    html += "</div></div>";
+    html += `<div class="tt-legend"><span><i style="background:var(--blue-tint);border:1px solid var(--blue)"></i> Open — click to claim</span><span><i style="background:var(--accent)"></i> Your selection</span></div>`;
+    host.innerHTML = html;
+    host.querySelectorAll(".tt-chip").forEach((btn) => {
+      const f = findGroup(btn.dataset.gid);
+      if (f) btn.addEventListener("click", () => toggle(f.c, f.g));
+    });
+  }
+
+  // ---------- COURSE LIST ----------
   function renderCatalogue() {
     const host = $("catalogue");
     const courses = catalogue.filter((c) => c.period === period && matchesSearch(c));
@@ -159,37 +259,37 @@
       const block = document.createElement("div");
       block.className = "course" + (isOpen ? " open" : "");
       block.innerHTML = `
-        <div class="course-head">
+        <button class="course-head" type="button" aria-expanded="${isOpen}">
           <span class="course-code">${c.code}</span>
-          <span class="course-title">${c.title}</span>${levelChip(c)}
+          <span class="course-title">${esc(c.title)}</span>${levelChip(c)}
           <span class="course-progress">
             <span class="course-meta">${openGroups} of ${total} open</span>
             <span class="bar"><i style="width:${pct}%"></i></span>
           </span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        </div>
+        </button>
         ${aboutHtml(c)}
         <div class="groups"></div>`;
       const head = block.querySelector(".course-head");
       head.addEventListener("click", () => {
-        if (openCourses.has(c.id)) openCourses.delete(c.id); else openCourses.add(c.id);
-        block.classList.toggle("open");
+        const willOpen = !openCourses.has(c.id);
+        if (willOpen) openCourses.add(c.id); else openCourses.delete(c.id);
+        block.classList.toggle("open", willOpen);
+        head.setAttribute("aria-expanded", String(willOpen));
       });
       const grid = block.querySelector(".groups");
       c.groups.forEach((g) => grid.appendChild(renderGroup(c, g)));
       host.appendChild(block);
     });
-    if (!shown) host.innerHTML = `<div class="notice info" style="justify-content:center">No courses match your filters.</div>`;
+    if (!shown) host.innerHTML = `<div class="empty-state">No courses match your filters.</div>`;
   }
 
-  const esc = (s) => (s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"));
   function aboutHtml(c) {
     const d = c.details || {};
     const row = (label, val) => val ? `<div class="about-row"><strong>${label}:</strong> ${esc(val)}</div>` : "";
     const list = (title, arr) => (arr && arr.length)
       ? `<div class="about-sec"><h5>${title}</h5><ul>${arr.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "";
     const para = (title, val) => val ? `<div class="about-sec"><h5>${title}</h5><p>${esc(val)}</p></div>` : "";
-
     const bits = [];
     if (c.coordinator) {
       const mail = c.coordinator_email ? ` · <a href="mailto:${esc(c.coordinator_email)}">${esc(c.coordinator_email)}</a>` : "";
@@ -220,12 +320,14 @@
     const el = document.createElement("button");
     el.type = "button";
     el.className = "group" + (full ? " full" : "") + (isSel ? " selected" : "");
+    el.setAttribute("aria-pressed", String(isSel));
+    if (full) el.setAttribute("aria-disabled", "true");
     let status, cls;
     if (full) { status = "Filled"; cls = "s-full"; }
     else if (conflict) { status = "Time clash with another pick"; cls = "s-conflict"; }
     else { status = (g.capacity > 1 ? `${g.capacity - g.claimed} of ${g.capacity} open` : "Open"); cls = "s-open"; }
     el.innerHTML = `
-      <div class="glabel">${g.label}
+      <div class="glabel">${esc(g.label)}
         <span class="check">${isSel ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' : ""}</span>
       </div>
       <div class="gtimes">${fmtTimes(g) || "&nbsp;"}</div>
@@ -237,7 +339,7 @@
   function toggle(c, g) {
     if (selected.has(g.id)) selected.delete(g.id);
     else selected.set(g.id, { code: c.code, title: c.title, label: g.label, group: g });
-    renderCatalogue();
+    renderAll();
     renderCart();
   }
 
@@ -246,10 +348,10 @@
     if (!selected.size) { cart.style.display = "none"; return; }
     cart.style.display = "block";
     $("seltags").innerHTML = [...selected.entries()].map(([id, s]) =>
-      `<span class="seltag">${s.code} ${s.label}<button data-id="${id}" aria-label="Remove">×</button></span>`
+      `<span class="seltag">${esc(s.code)} ${esc(s.label)}<button data-id="${id}" aria-label="Remove ${esc(s.code)} ${esc(s.label)}">×</button></span>`
     ).join("");
     $("seltags").querySelectorAll("button").forEach((b) =>
-      b.addEventListener("click", () => { selected.delete(b.dataset.id); renderCatalogue(); renderCart(); })
+      b.addEventListener("click", () => { selected.delete(b.dataset.id); renderAll(); renderCart(); })
     );
   }
 
@@ -263,22 +365,22 @@
 
   function openModal() {
     if (!settings.registration_open) { notify("err", "Registration is currently closed."); return; }
-    const list = [...selected.values()].map((s) => `<li>${s.code} ${s.label} — ${s.title}</li>`).join("");
+    const list = [...selected.values()].map((s) => `<li>${esc(s.code)} ${esc(s.label)} — ${esc(s.title)}</li>`).join("");
     const warn = anyClash()
       ? `<div class="notice err" style="margin-top:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg><div>Some of your selected groups overlap in time. You can still continue, but please double-check you can attend all of them.</div></div>`
       : "";
     $("modal-body").innerHTML = `
-      <p style="margin-top:0;font-size:14px;color:#374151">You are registering to tutor:</p>
+      <p style="margin-top:0;font-size:14px;color:var(--muted)">You are registering to tutor:</p>
       <ul style="margin:0 0 8px;padding-left:20px;font-size:14px">${list}</ul>
       ${warn}
       <div id="form-err"></div>
-      <div class="field"><label>Full name <span class="req">*</span></label><input id="f-name" type="text" autocomplete="name"></div>
+      <div class="field"><label for="f-name">Full name <span class="req">*</span></label><input id="f-name" type="text" autocomplete="name"></div>
       <div class="row2">
-        <div class="field"><label>Email</label><input id="f-email" type="email" autocomplete="email" placeholder="name@maastrichtuniversity.nl"></div>
-        <div class="field"><label>Phone</label><input id="f-phone" type="tel" autocomplete="tel"></div>
+        <div class="field"><label for="f-email">Email</label><input id="f-email" type="email" autocomplete="email" placeholder="name@maastrichtuniversity.nl"></div>
+        <div class="field"><label for="f-phone">Phone</label><input id="f-phone" type="tel" autocomplete="tel"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>I am a…</label>
+        <div class="field"><label for="f-type">I am a…</label>
           <select id="f-type">
             <option value="">Select…</option>
             <option>PhD candidate</option>
@@ -288,10 +390,10 @@
             <option>Other</option>
           </select>
         </div>
-        <div class="field"><label>Department / affiliation</label><input id="f-aff" type="text" placeholder="e.g. FSE — Chemistry"></div>
+        <div class="field"><label for="f-aff">Department / affiliation</label><input id="f-aff" type="text" placeholder="e.g. FSE — Chemistry"></div>
       </div>
-      <div class="field"><label>Anything we should know? (optional)</label><textarea id="f-note" placeholder="Availability notes, experience, preferences…"></textarea></div>
-      <button class="btn btn-navy" id="submit-claim" style="width:100%;justify-content:center">Confirm registration</button>
+      <div class="field"><label for="f-note">Anything we should know? (optional)</label><textarea id="f-note" placeholder="Availability notes, experience, preferences…"></textarea></div>
+      <button class="btn btn-primary" id="submit-claim" style="width:100%">Confirm registration</button>
       <p class="hint" style="text-align:center;margin-top:12px">By submitting you agree the MSP office may contact you about these tutorials.</p>`;
     $("submit-claim").addEventListener("click", submitClaim);
     showModal(true);
@@ -319,7 +421,6 @@
       const msgFn = MSP.CLAIM_MESSAGES[e.code];
       const msg = msgFn ? msgFn(e.detail) : (e.message || "Something went wrong. Please try again.");
       ferr.innerHTML = errBox(msg);
-      // if a group was taken/closed, drop it and refresh so the UI is honest
       if (e.code === "GROUP_FULL" || e.code === "GROUP_CLOSED" || e.code === "GROUP_NOT_FOUND") {
         for (const [id, s] of selected.entries())
           if (s.label === e.detail) selected.delete(id);
@@ -334,8 +435,8 @@
     $("modal-title").textContent = "You're registered 🎉";
     $("modal-body").innerHTML = `
       <div class="notice ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-        <div>Thank you, ${name || "tutor"}. Your group(s) are now locked to you and the MSP office has the details. You can close this window.</div></div>
-      <button class="btn btn-ghost" id="done-btn" style="width:100%;justify-content:center">Back to the list</button>`;
+        <div>Thank you, ${esc(name) || "tutor"}. Your group(s) are now locked to you and the MSP office has the details. You can close this window.</div></div>
+      <button class="btn btn-ghost" id="done-btn" style="width:100%">Back to the list</button>`;
     $("done-btn").addEventListener("click", () => { showModal(false); $("modal-title").textContent = "Your details"; });
   }
 
@@ -353,14 +454,15 @@
   $("modal-close").addEventListener("click", () => showModal(false));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") showModal(false); });
   $("continue-btn").addEventListener("click", openModal);
-  $("search").addEventListener("input", (e) => { search = e.target.value.trim().toLowerCase(); renderCatalogue(); });
-  $("only-open").addEventListener("change", (e) => { onlyOpen = e.target.checked; renderCatalogue(); });
+  $("search").addEventListener("input", (e) => { search = e.target.value.trim().toLowerCase(); renderAll(); });
+  $("only-open").addEventListener("change", (e) => { onlyOpen = e.target.checked; renderAll(); });
+  $("view-toggle").querySelectorAll("button").forEach((b) =>
+    b.addEventListener("click", () => { view = b.dataset.v; applyView(); }));
 
   // ---------- load + realtime ----------
   async function reload() {
     catalogue = await MSP.getCatalogue();
     settings = await MSP.getSettings();
-    // drop any selections that someone else just took (so the UI stays honest)
     const allGroups = catalogue.flatMap((c) => c.groups);
     let bumped = [];
     for (const [id, s] of selected.entries()) {
@@ -369,7 +471,7 @@
     }
     if (bumped.length) notify("err", `${bumped.join(", ")} was just taken by someone else and removed from your selection.`);
     renderTabs();
-    renderCatalogue();
+    renderAll();
   }
 
   async function init() {
@@ -382,7 +484,11 @@
     MSP.subscribe(async () => { await reload(); renderCart(); });
   }
 
-  init().catch((e) => { console.error(e); notify("err", "Could not load the catalogue: " + (e.message || e)); $("catalogue").innerHTML = ""; });
+  init().catch((e) => {
+    console.error(e);
+    notify("err", "Could not load the catalogue: " + (e.message || e));
+    $("timetable").innerHTML = ""; $("catalogue").innerHTML = "";
+  });
 })();
 </script>
 </body>
