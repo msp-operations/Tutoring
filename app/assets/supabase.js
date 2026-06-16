@@ -46,6 +46,8 @@
       const demo = window.MSP_DEMO_DATA || [];
       return demo.map((c, ci) => ({
         id: "demo-c-" + ci, code: c.code, title: c.title, period: c.period, department: c.department,
+        coordinator: c.coordinator, coordinator_email: c.coordinator_email,
+        prerequisites: c.prerequisites, description: c.description,
         groups: c.groups.map((g, gi) => ({
           id: "demo-g-" + ci + "-" + gi, label: g.label,
           day1: g.day1, start1: g.start1, end1: g.end1, day2: g.day2, start2: g.start2, end2: g.end2,
@@ -68,7 +70,8 @@
     });
     return (courses || []).map((c) => ({
       id: c.id, code: c.code, title: c.title, period: c.period,
-      department: c.department, coordinator: c.coordinator, groups: byCourse[c.id] || [],
+      department: c.department, coordinator: c.coordinator, coordinator_email: c.coordinator_email,
+      prerequisites: c.prerequisites, description: c.description, groups: byCourse[c.id] || [],
     }));
   };
 

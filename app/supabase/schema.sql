@@ -19,16 +19,23 @@
 -- Tables
 -- ---------------------------------------------------------------------------
 create table if not exists course (
-  id          uuid primary key default gen_random_uuid(),
-  code        text not null,                 -- e.g. CHE1101
-  title       text not null,                 -- e.g. Introduction to Chemistry
-  period      text not null,                 -- 'P1' / 'P2' (extensible)
-  department  text not null default 'MSP',
-  coordinator text,                          -- optional, admin-editable
-  sort        int  not null default 0,
-  created_at  timestamptz not null default now(),
+  id                uuid primary key default gen_random_uuid(),
+  code              text not null,           -- e.g. CHE1101
+  title             text not null,           -- e.g. Introduction to Chemistry
+  period            text not null,           -- 'P1' / 'P2' (extensible)
+  department        text not null default 'MSP',
+  coordinator       text,                    -- from the MSP course catalogue
+  coordinator_email text,
+  prerequisites     text,
+  description        text,                   -- "About this course" blurb
+  sort              int  not null default 0,
+  created_at        timestamptz not null default now(),
   unique (code, period)
 );
+-- Upgrade older deployments that pre-date the catalogue fields:
+alter table course add column if not exists coordinator_email text;
+alter table course add column if not exists prerequisites     text;
+alter table course add column if not exists description        text;
 
 create table if not exists tutorial_group (
   id            uuid primary key default gen_random_uuid(),
