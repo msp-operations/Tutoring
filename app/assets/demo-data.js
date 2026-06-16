@@ -1,4 +1,4 @@
-// Auto-generated preview dataset from 'Info for tutor registration tool.xlsx'.
+// Auto-generated preview dataset from the MSP spreadsheet + course catalogue.
 // Used ONLY when Supabase is not configured, so the site can be viewed offline.
 window.MSP_DEMO_DATA = [
  {
@@ -6,6 +6,10 @@ window.MSP_DEMO_DATA = [
   "title": "General Zoology",
   "period": "P1",
   "department": "MSP",
+  "coordinator": "Dr. John Sloggett",
+  "coordinator_email": "j.sloggett@maastrichtuniversity.nl",
+  "prerequisites": null,
+  "description": "Animals are everywhere, on land, in water and in the air. They comprise an extremely diverse kingdom, with all species being a mixture of shared and unique biological characteristics. These characteristics are a product of evolutionary history and adaptation to the abiotic and biotic environment. In this course you will focus on the major groups within the animal kingdom, what defines them, how they are organised and how they are related to each other; you will also examine the specific adaptations of certain animals in more depth. The question “What is an animal?” will be considered as will the issue of how animals are grouped and related to each other. This will be done in the context of the major phyla, their defining morphological, anatomical and physiological features and the sorts of adaptations and behaviours that they exhibit. You will also examine certain adaptations such as bright colouration, feeding or parental care in greater depth, using particular animal groups as a source of examples.",
   "groups": [
    {
     "label": "A1 + B1",
@@ -62,6 +66,10 @@ window.MSP_DEMO_DATA = [
   "title": "Introduction to Chemistry",
   "period": "P1",
   "department": "MSP",
+  "coordinator": "Dr. Chris Bahn",
+  "coordinator_email": "chris.bahn@maastrichtuniversity.nl",
+  "prerequisites": null,
+  "description": "The emphasis of this course will be on a number of essential topics in modern chemistry. The first part of the course will provide an overview of the structure of atoms and their place in the periodic table as well as the properties of various types of chemical bonds and chemical bonding theory. The second part will present an introduction to physical chemistry with important topics such as the characteristics of gases/liquids/solids, thermodynamics and reaction kinetics. In the final part, the course focuses on a selection of important chemical subjects which form the basis of chemical studies in general. Typical topics in this part of the course are based on acid-base chemistry and electrochemistry.",
   "groups": [
    {
     "label": "A1+B1",
@@ -310,6 +318,10 @@ window.MSP_DEMO_DATA = [
   "title": "Spectroscopy",
   "period": "P1",
   "department": "MSP",
+  "coordinator": "Annelies van der Bok",
+  "coordinator_email": "annelies.vanderbok@maastrichtuniversity.nl",
+  "prerequisites": "CHE2009 Fundamentals of Organic Chemistry (or CHE2001 Organic Chemistry)",
+  "description": "The course will focus on several spectroscopic and chromatographic techniques, such as Nuclear Magnetic Resonance (NMR), UV-Vis spectroscopy, FT-IR spectroscopy, gas and liquid chromatography, and mass spectrometry. First, the theoretical background and physical basics of these techniques will be discussed. Then, the reading and interpretation of spectral analysis will be covered. The main focus of the course will be on acquiring knowledge and practical expertise to characterize chemical compounds, primarily organic molecules. You will learn to develop an analytical strategy to get structural information for unknown molecules by combining the experimental data of the abovementioned techniques.",
   "groups": [
    {
     "label": "A1+B1",
@@ -402,6 +414,10 @@ window.MSP_DEMO_DATA = [
   "title": "Inorganic Chemistry",
   "period": "P1",
   "department": "MSP",
+  "coordinator": "Dr. Giuditta Perversi",
+  "coordinator_email": "g.perversi@maastrichtuniversity.nl",
+  "prerequisites": "CHE2010 General Chemistry",
+  "description": "This course will immerse the students into the world of chemistry beyond carbon, and aims to provide a broad survey of the chemistry available when transition metals are involved. We will build upon the generalized bonding knowledge from General Chemistry to expand the Molecular Orbital Theory all the way to the complex geometries of the d-block. The Crystal Field Theory (CFT) of d-block complexes will correlate with their point group symmetry, and then expanded to the more comprehensive Ligand Field Theory (LFT). In the second half of the course, the newfound knowledge will be used to understand the properties of transition metal complexes: IR and Raman activities will be derived with symmetry analysis; colours and UV-Vis transitions will be explained. We will close our course with fundamental aspects of organometallic reactivity and catalysis are provided.",
   "groups": [
    {
     "label": "A1+B1",
@@ -458,6 +474,10 @@ window.MSP_DEMO_DATA = [
   "title": "Fundamentals of Science Education",
   "period": "P1",
   "department": "MSP",
+  "coordinator": "Dr. May Lee",
+  "coordinator_email": "may.lee@maastrichtuniversity.nl",
+  "prerequisites": "PRO1002: Project Period (1000-level)",
+  "description": "Science teaching is a complex craft that draws on knowledge and skills from multiple fields. Learning to use high-leverage teaching practices well takes time because it requires principled reasoning—deciding which practice, in what form, best fits your students, the science content, and the classroom context. In this module, we use cognitive and social constructivist perspectives to examine how students learn in relation to these high-leverage practices. You will become familiar with key features of effective science teaching and learn to identify them through observations of high school science classrooms. The module culminates in designing and teaching a science lesson to your peers and writing a report that uses course readings and activities to describe, analyse, and reflect on your peer-taught lesson.",
   "groups": [
    {
     "label": "A1+B1",
@@ -526,6 +546,10 @@ window.MSP_DEMO_DATA = [
   "title": "Introduction to Programming",
   "period": "P1",
   "department": "MSP",
+  "coordinator": "Panos Christakoglou",
+  "coordinator_email": "panos.christakoglou@maastrichtuniversity.nl",
+  "prerequisites": null,
+  "description": "The course serves as an introduction to programming tailored for students without prior experience. It is divided into two parts: the first part focuses on basic programming concepts, principles, and problem- solving techniques, emphasising language-agnostic approaches. The second part presents the basics of C++, and introduces elements of Python and R programming. The course concludes with an exploration of Language Model Generation (LMG) using examples from ChatGPT.",
   "groups": [
    {
     "label": "A1+B1",
@@ -630,6 +654,10 @@ window.MSP_DEMO_DATA = [
   "title": "Introduction to Physics",
   "period": "P1",
   "department": "MSP",
+  "coordinator": "Dr. Lorenzo Reverberi",
+  "coordinator_email": "l.reverberi@maastrichtuniversity.nl",
+  "prerequisites": null,
+  "description": "Physics is the natural science that aims to understand the constituents of the universe and their interactions and behaviour, from subatomic particles to the largest cosmic structures. This course will introduce participants to what studying physics at university and thinking like a physicist is all about. We will start at the very basics – units, measurements, motion – and gradually build towards the revolutions of the 20th century: relativity and quantum physics. Topics will be covered at an introductory but rigorous level, and we will put special emphasis on the history of the scientific discoveries, as well as practical applications of physics through estimation, model-building, and real-life examples of the concepts.",
   "groups": [
    {
     "label": "A1+B1",
@@ -878,6 +906,10 @@ window.MSP_DEMO_DATA = [
   "title": "Stellar Astronomy",
   "period": "P1",
   "department": "MSP",
+  "coordinator": "Mr. Chad Ellington",
+  "coordinator_email": "chad.ellington@maastrichtuniversity.nl",
+  "prerequisites": null,
+  "description": "This course begins with an overview of information available by studying the spectrum of light from objects within our universe. We then look at our own star, the Sun, covering what humanity has learned thus far about its interior structure/composition. Next, we study properties of other stars including: how they form, their ‘lifetimes’, ‘evolution’ & the many remnants they leave behind.",
   "groups": [
    {
     "label": "A/01",
@@ -910,6 +942,10 @@ window.MSP_DEMO_DATA = [
   "title": "Introduction to Biology",
   "period": "P2",
   "department": "MSP",
+  "coordinator": "David Cortens",
+  "coordinator_email": "david.cortens@maastrichtuniversity.nl",
+  "prerequisites": null,
+  "description": "This course provides an overview of the major branches of biological sciences and the fundamental processes relevant to each. The major topic areas covered are ecology, evolution, cell and molecular biology, genetics, and organismal biology. For each topic, you will explore how the content connects to the central concepts of all biological sciences: regulation, self- organization, evolution, inheritance, communication, and interaction.",
   "groups": [
    {
     "label": "A1+B1",
@@ -1158,6 +1194,10 @@ window.MSP_DEMO_DATA = [
   "title": "Introduction to Liberal Arts & Sciences",
   "period": "P2",
   "department": "MSP",
+  "coordinator": "Dr. Hanne Diliën",
+  "coordinator_email": "hanne.dilien@maastrichtuniversity.nl",
+  "prerequisites": null,
+  "description": "The first part of the course aims at providing you with an understanding of the natural sciences from a philosophical perspective. What is science? What is the scientific methodology? What are the norms and values in a scientific environment? The variety of perspectives that you are introduced to when answering these questions will allow you to develop critical thinking skills and provide you with insight that can be used in your personal development as a scientist. After exploring the philosophy of science in the first part of the course, the second part teaches you to apply and communicate your knowledge and ideas effectively by devoting attention to argumentation and science communication.",
   "groups": [
    {
     "label": "A1+B1",
@@ -1406,6 +1446,10 @@ window.MSP_DEMO_DATA = [
   "title": "Multivariable Calculus",
   "period": "P2",
   "department": "MSP",
+  "coordinator": "Dr. Mariet Hofstee",
+  "coordinator_email": "mariet.hofstee@maastrichtuniversity.nl",
+  "prerequisites": "MAT2006 Calculus Recommended MAT2004 Linear Algebra (highly recommended)",
+  "description": "Multivariate calculus is the extension of calculus of one variable to calculus with functions of several variables: notably the differentiation and integration of functions involving multiple variables. Considerable attention will be devoted to vector calculus, with focus on differentiation and integration of vector fields, primarily in 3-dimensional Euclidean space.",
   "groups": [
    {
     "label": "A1+B1",
@@ -1462,6 +1506,10 @@ window.MSP_DEMO_DATA = [
   "title": "Galactic Astronomy",
   "period": "P2",
   "department": "MSP",
+  "coordinator": "Mr. Chad Ellington",
+  "coordinator_email": "chad.ellington@maastrichtuniversity.nl",
+  "prerequisites": null,
+  "description": "This course begins with an exploration of our Milky Way Galaxy, identifying its overall structure and our Sun’s place within which. Continuing outward, we study properties of other galaxies, highlighting properties of varying types, how they form and change with time. Finishing up with how large scale observations lead us to the initial conditions of our universe and the Hot Big Bang theory itself.",
   "groups": [
    {
     "label": "A1+B1",
