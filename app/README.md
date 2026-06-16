@@ -86,7 +86,8 @@ several groups is all-or-nothing.
 
 ## Where the catalogue data comes from
 
-Tutorial groups, days and times come from `Info for tutor registration tool.xlsx`.
+Tutorial groups, days and times come from
+`reference/Info for tutor registration tool.xlsx`.
 The full course information shown on the register page — coordinator + email,
 level, prerequisites, co-requisites, recommended courses, objectives,
 description, instructional format, assessment, literature and the generative-AI

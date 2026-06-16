@@ -16,13 +16,14 @@ usable as context) or a small set of canonical source PDFs.
 | [`coordinators-2026-2027.md`](coordinators-2026-2027.md) / `.csv` | 81 course coordinators → UM email. | `coordinator` / `coordinator_email` fields when adding/maintaining courses. |
 | [`frame-schedule-2026-2027.md`](frame-schedule-2026-2027.md) | The 5 fixed weekly slots + standard teaching time blocks + period dates. | The Mon–Fri timetable and time-clash logic on the register page. |
 | [`tutoring-procedures.md`](tutoring-procedures.md) | How the course-registration → scheduling → tutor-allocation cycle works, who's eligible, how tutors are sourced. | Context for maintaining the tool / onboarding. |
+| `Info for tutor registration tool.xlsx` | Tutorial groups, days & times (Fall P1/P2). | Source for `seed.sql` / `demo-data.js` — the live catalogue. |
 | [`originals/`](originals/) | Canonical source PDFs (see below). | Authoritative fallback for the distilled files. |
 
 ### `originals/`
 
 - `2026-2027 MSP Course Catalogue May 2026.pdf` — full course descriptions,
-  objectives, literature, assessment, GenAI policy. **Newer than the April 2026
-  PDF currently in the repo root** — consider this the up-to-date catalogue.
+  objectives, literature, assessment, GenAI policy. The up-to-date catalogue
+  (supersedes earlier April 2026 drafts).
 - `Frame schedule MSP 2026-2027 Period 1/2/4/5 - Final.pdf` — authoritative
   per-course slot allocations (which course is in which slot) + coordinators.
 - `Pre-corequisites overview 2026-2027 P1 and P2 April 2026.pdf` — source for the
@@ -32,10 +33,10 @@ usable as context) or a small set of canonical source PDFs.
 
 ## How this maps to the tool
 
-The tool's live catalogue is generated from two files in the repo root:
+The tool's live catalogue is generated from two source files kept in this folder:
 `Info for tutor registration tool.xlsx` (tutorial groups, days, times → currently
-Fall P1/P2 only, the 12 active courses / 117 groups) and the catalogue PDF
-(course detail). **This folder is the supporting reference** for that data: the
+Fall P1/P2 only, the 12 active courses / 117 groups) and the catalogue PDF in
+`originals/` (course detail). **This folder is the supporting reference** for that data: the
 full catalogue beyond the active 12, the coordinator→email lookup, the slot
 system behind the timetable, and the office workflow the tool fits into.
 

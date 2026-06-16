@@ -14,8 +14,8 @@ plus coordinators and pre/co-requisite flags) are the four PDFs in
 - `Frame schedule MSP 2026-2027 Period 4 - Final.pdf`
 - `Frame schedule MSP 2026-2027 Period 5 - Final.pdf`
 
-The exact tutorial group days/times that drive the tool live in the repo's
-`Info for tutor registration tool.xlsx` (→ `seed.sql` / `demo-data.js`).
+The exact tutorial group days/times that drive the tool live in
+`reference/Info for tutor registration tool.xlsx` (→ `seed.sql` / `demo-data.js`).
 
 ## Slot legend (identical across P1, P2, P4, P5)
 
