@@ -20,10 +20,15 @@ app/
 │   ├─ config.js         ← THE ONE FILE YOU EDIT (your Supabase keys)
 │   ├─ styles.css        Shared MSP styling
 │   ├─ supabase.js       Data layer (live Supabase + offline preview)
-│   └─ demo-data.js      Auto-generated catalogue for offline preview
+│   ├─ demo-data.js      Auto-generated catalogue for offline preview
+│   ├─ ui.js             Cosmetic niceties (count-up, confetti)
+│   └─ feedback.js       "Share feedback" widget (shared on every page)
 └─ supabase/
     ├─ schema.sql        Database tables, atomic claim, privacy rules
-    └─ seed.sql          Courses & groups generated from the source spreadsheet
+    ├─ seed.sql          Courses & groups generated from the source spreadsheet
+    ├─ feedback.sql      Feedback table + submit function (run once)
+    ├─ FEEDBACK-SETUP.md Feedback capture + optional email-to-office guide
+    └─ functions/        Edge Function: feedback-email (optional email forward)
 ```
 
 ## Preview it right now (no setup)
@@ -45,6 +50,7 @@ off. Good for showing Linzi/Panos the look and flow.
 2. In the project, open **SQL Editor** and run, in order:
    - the contents of `supabase/schema.sql`
    - the contents of `supabase/seed.sql`
+   - the contents of `supabase/feedback.sql` (enables the feedback feature)
 
 ### 2. Make yourself an admin
 In the SQL Editor run (use your real MSP email):
