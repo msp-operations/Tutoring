@@ -90,16 +90,27 @@ Tutorial groups, days and times come from `Info for tutor registration tool.xlsx
 The full course information shown on the register page — coordinator + email,
 level, prerequisites, co-requisites, recommended courses, objectives,
 description, instructional format, assessment, literature and the generative-AI
-policy — is pulled from `2026-2027 MSP Course Catalogue April.pdf`. The flat
-fields live in their own columns; everything else is stored in a `details`
-JSONB column on `course`. Both feed `seed.sql` and the offline preview data.
+policy — is pulled from the **`2026-2027 MSP Course Catalogue May 2026.pdf`** (in
+`reference/originals/`, the up-to-date catalogue). Coordinator emails are verified
+against `reference/coordinators-2026-2027.csv`. The flat fields live in their own
+columns; everything else is stored in a `details` JSONB column on `course`.
 
-## Updating the catalogue for a new year
+The `reference/` folder is the supporting context for all of this: the full
+142-course catalogue, the coordinator→email lookup, the five-slot frame schedule
+behind the Mon–Fri timetable, period dates, and the office tutoring workflow.
 
-Re-generate `seed.sql` from a new spreadsheet (see the parser used to create
-it), or edit courses/groups directly from the **Groups & capacity** section of
-the admin dashboard. Re-running `seed.sql` rebuilds the catalogue and re-seeds
-the pre-assigned tutors; it leaves live registrations untouched.
+## Updating the catalogue
+
+- **Safe refresh of course info on a LIVE database:** run
+  `supabase/update-course-details.sql`. It only `UPDATE`s the `course` rows
+  (titles, coordinators, descriptions, details) — it never touches
+  `tutorial_group` or `registration`, so live sign-ups are safe.
+- **Full rebuild (initial setup / new year only):** `supabase/seed.sql` rebuilds
+  the whole catalogue. ⚠️ It deletes and recreates `tutorial_group`, which
+  cascade-deletes existing registrations — only run it before the tool is in use,
+  or after exporting sign-ups.
+- Per-group tweaks (capacity, open/close) can also be done from the admin
+  dashboard's **Groups & capacity** section.
 
 ## Admin dashboard at a glance
 

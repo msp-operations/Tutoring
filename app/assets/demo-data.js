@@ -1,5 +1,5 @@
-// Auto-generated preview dataset from the MSP spreadsheet + course catalogue.
-// Used ONLY when Supabase is not configured, so the site can be viewed offline.
+// Auto-generated from the MSP spreadsheet + May 2026 course catalogue.
+// Used ONLY when Supabase is not configured (offline preview).
 window.MSP_DEMO_DATA = [
  {
   "code": "BIO2004",
@@ -356,7 +356,7 @@ window.MSP_DEMO_DATA = [
   "period": "P1",
   "department": "MSP",
   "coordinator": "Annelies van der Bok",
-  "coordinator_email": "annelies.vanderbok@maastrichtuniversity.nl",
+  "coordinator_email": "anneliesvanderbok@maastrichtuniversity.nl",
   "prerequisites": "CHE2009 Fundamentals of Organic Chemistry (or CHE2001 Organic Chemistry)",
   "description": "The course will focus on several spectroscopic and chromatographic techniques, such as Nuclear Magnetic Resonance (NMR), UV-Vis spectroscopy, FT-IR spectroscopy, gas and liquid chromatography, and mass spectrometry. First, the theoretical background and physical basics of these techniques will be discussed. Then, the reading and interpretation of spectral analysis will be covered. The main focus of the course will be on acquiring knowledge and practical expertise to characterize chemical compounds, primarily organic molecules. You will learn to develop an analytical strategy to get structural information for unknown molecules by combining the experimental data of the abovementioned techniques.",
   "details": {
