@@ -28,6 +28,10 @@ create table if not exists course (
   coordinator_email text,
   prerequisites     text,
   description        text,                   -- "About this course" blurb
+  details           jsonb,                   -- everything else from the catalogue
+                                             -- (level, note, corequisites, recommended,
+                                             --  objectives[], literature, instructional_format,
+                                             --  assessment[], genai)
   sort              int  not null default 0,
   created_at        timestamptz not null default now(),
   unique (code, period)
@@ -36,6 +40,7 @@ create table if not exists course (
 alter table course add column if not exists coordinator_email text;
 alter table course add column if not exists prerequisites     text;
 alter table course add column if not exists description        text;
+alter table course add column if not exists details           jsonb;
 
 create table if not exists tutorial_group (
   id            uuid primary key default gen_random_uuid(),
