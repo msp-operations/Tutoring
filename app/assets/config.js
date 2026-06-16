@@ -13,8 +13,8 @@
    mode (it shows the real catalogue but cannot take live registrations).
    ========================================================================== */
 window.MSP_CONFIG = {
-  SUPABASE_URL: "YOUR_SUPABASE_URL_HERE",
-  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY_HERE",
+  SUPABASE_URL: "https://jrjimjtpcofcnpynredc.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyamltanRwY29mY25weW5yZWRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MzQ1NDAsImV4cCI6MjA5NzIxMDU0MH0.FDj0yH2M4hGelnB2cx1uyQPea0hsDOyr7tpzE3LjP2g",
 
   // Cosmetic only.
   ACADEMIC_YEAR: "2026 / 2027",
