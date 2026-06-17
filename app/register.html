@@ -310,7 +310,7 @@
       });
     });
     html += "</div></div>";
-    html += `<div class="tt-legend"><span><i style="background:var(--blue-tint);border:1px solid var(--blue)"></i> Open - click to choose</span><span><i style="background:var(--accent)"></i> Your selection</span><span>Number = groups open at that time</span></div>`;
+    html += `<div class="tt-legend"><span><i style="background:var(--blue-tint);border:1px solid var(--blue)"></i> Open - click to choose</span><span><i style="background:var(--accent)"></i> Your selection</span><span>Number = groups open at that time</span><span>Each group meets twice a week at the times shown; codes like A1+B1 are just group names</span></div>`;
     host.innerHTML = html;
     host.querySelectorAll(".tt-chip").forEach((btn) => {
       const b = ttBuckets[+btn.dataset.bi];
@@ -337,6 +337,7 @@
   }
   function renderChoices(b, anchor) {
     chooserEl.innerHTML = `<div class="tt-chooser-h">${esc(b.code)} · ${esc(b.schedule)}</div>` +
+      `<div class="tt-chooser-note">These groups all meet at this time - pick any open one. The code (e.g. A1+B1) is just the group's name.</div>` +
       b.items.map(({ g }) => {
         const sel = selected.has(g.id);
         return `<button type="button" class="tt-choice${sel ? " selected" : ""}" data-gid="${g.id}">${esc(g.label)}<span>${sel ? "✓ selected" : "Open"}</span></button>`;
