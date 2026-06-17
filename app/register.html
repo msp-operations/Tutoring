@@ -555,12 +555,22 @@
   }
 
   function successScreen(name) {
+    const contact = (window.MSP_CONFIG && MSP_CONFIG.CONTACT_EMAIL) || "";
     $("modal-title").textContent = "You're registered";
     $("modal-body").innerHTML = `
       <div class="success-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
       <div class="notice ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-        <div>Thank you, ${esc(name) || "tutor"}. Your group(s) are now locked to you and the MSP office has the details. You can close this window.</div></div>
-      <button class="btn btn-ghost" id="done-btn" style="width:100%">Back to the list</button>`;
+        <div>Thank you, ${esc(name) || "tutor"}. Your group(s) are now locked to you.</div></div>
+      <div style="margin:6px 2px 4px">
+        <h5 style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:0 0 7px">What happens next</h5>
+        <ul style="margin:0;padding-left:18px;font-size:13.5px;color:#33405a;line-height:1.65">
+          <li>The MSP office now has your details and will be in touch about the practicalities.</li>
+          <li>The detailed timetable is released about 2.5 weeks before teaching starts; the draft may still shift.</li>
+          <li>Keep an eye on your email for confirmation and any updates.</li>
+        </ul>
+      </div>
+      ${contact ? `<p class="hint" style="text-align:center;margin-top:14px">Questions about tutoring? <a href="mailto:${esc(contact)}">${esc(contact)}</a></p>` : ""}
+      <button class="btn btn-ghost" id="done-btn" style="width:100%;margin-top:6px">Back to the list</button>`;
     $("done-btn").addEventListener("click", () => { showModal(false); $("modal-title").textContent = "Your details"; });
     if (window.MSPUI) MSPUI.confetti();
   }
