@@ -17,6 +17,9 @@
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
+<!-- Want to change wording or dates? See EDITING-INSTRUCTIONS (repo) / the PDF
+     in the Tutoring folder. The blue script at the bottom is the app's logic -
+     leave that alone unless you know JavaScript. -->
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -228,6 +231,8 @@
   }
 
   // ---------- live board stats ----------
+  // PERIOD DATES shown under the hero title. SAFE TO EDIT: change the text in
+  // the quotes when teaching dates change. Keep the P1: / P2: labels as they are.
   const PERIOD_DATES = { P1: "31 August - 16 October 2026", P2: "26 October - 10 December 2026" };
   function renderBoardStats() {
     const gs = catalogue.filter((c) => c.period === period).flatMap((c) => c.groups);

@@ -17,6 +17,8 @@
    ========================================================================== */
 
 :root{
+  /* COLOURS: change a value here (e.g. --accent) and it updates everywhere.
+     The #xxxxxx codes are hex colours. Keep --accent for buttons/highlights. */
   --navy:#001C3D; --navy-2:#012b54; --navy-soft:#0a2540;
   --ink:#101b2c; --muted:#566072; --line:#dfe3ea; --line-2:#eef1f5;
   --bg:#ffffff; --bg-soft:#f5f7f9; --bg-navy-tint:#f3f6fb;
