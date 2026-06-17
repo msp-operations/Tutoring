@@ -104,6 +104,7 @@
   <div class="footer-inner">
     <img class="f-msp" src="assets/img/msp-logo.png" alt="Maastricht Science Programme">
     <div>Maastricht Science Programme · Faculty of Science and Engineering, Maastricht University</div>
+    <a href="privacy.html">Privacy statement</a>
     <div class="copy">© Maastricht University</div>
   </div>
 </footer>
@@ -495,10 +496,7 @@
       ${warn}
       <div id="form-err"></div>
       <div class="field"><label for="f-name">Full name <span class="req">*</span></label><input id="f-name" type="text" autocomplete="name"></div>
-      <div class="row2">
-        <div class="field"><label for="f-email">Email</label><input id="f-email" type="email" autocomplete="email" placeholder="name@maastrichtuniversity.nl"></div>
-        <div class="field"><label for="f-phone">Phone</label><input id="f-phone" type="tel" autocomplete="tel"></div>
-      </div>
+      <div class="field"><label for="f-email">Email</label><input id="f-email" type="email" autocomplete="email" placeholder="name@maastrichtuniversity.nl"></div>
       <div class="row2">
         <div class="field"><label for="f-type">I am a...</label>
           <select id="f-type">
@@ -512,9 +510,13 @@
         </div>
         <div class="field"><label for="f-aff">Department / affiliation</label><input id="f-aff" type="text" placeholder="e.g. FSE - Chemistry"></div>
       </div>
-      <div class="field"><label for="f-note">Anything we should know? (optional)</label><textarea id="f-note" placeholder="Availability notes, experience, preferences..."></textarea></div>
+      <div class="field"><label for="f-note">Anything we should know? (optional)</label><textarea id="f-note" placeholder="Availability or experience notes"></textarea><div class="hint">Please don't include sensitive personal information (e.g. about health).</div></div>
+      <label style="display:flex;gap:9px;align-items:flex-start;font-weight:500;font-size:13px;color:var(--navy);margin:6px 0 14px;cursor:pointer">
+        <input type="checkbox" id="f-consent" style="width:16px;height:16px;margin-top:2px;accent-color:var(--accent);flex-shrink:0">
+        <span>I agree that the MSP office may store these details and contact me about these tutorials, as set out in the <a href="privacy.html" target="_blank" rel="noopener">privacy statement</a>. <span class="req">*</span></span>
+      </label>
       <button class="btn btn-primary" id="submit-claim" style="width:100%">Confirm registration</button>
-      <p class="hint" style="text-align:center;margin-top:12px">By submitting you agree the MSP office may contact you about these tutorials.</p>`;
+      <p class="hint" style="text-align:center;margin-top:12px">You can ask us to delete your data at any time - see the privacy statement.</p>`;
     $("submit-claim").addEventListener("click", submitClaim);
     showModal(true);
     setTimeout(() => $("f-name").focus(), 50);
@@ -525,10 +527,11 @@
     const ferr = $("form-err");
     ferr.innerHTML = "";
     if (!name) { ferr.innerHTML = errBox("Please enter your full name."); $("f-name").focus(); return; }
+    if (!$("f-consent").checked) { ferr.innerHTML = errBox("Please tick the consent box to continue."); $("f-consent").focus(); return; }
     const btn = $("submit-claim");
     btn.disabled = true; btn.textContent = "Confirming...";
     const info = {
-      name, email: $("f-email").value.trim(), phone: $("f-phone").value.trim(),
+      name, email: $("f-email").value.trim(), phone: null,
       type: $("f-type").value, affiliation: $("f-aff").value.trim(), motivation: $("f-note").value.trim(),
     };
     try {

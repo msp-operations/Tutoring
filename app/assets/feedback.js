@@ -74,7 +74,7 @@
           <div class="field"><label for="fb-email">Email (optional)</label><input id="fb-email" type="email" autocomplete="email" placeholder="If you'd like a reply"></div>
         </div>
         <button class="btn btn-primary" id="fb-send" style="width:100%">Send feedback</button>
-        <p class="hint" style="text-align:center;margin-top:12px">We read every message. Thank you for helping make this better.</p>`;
+        <p class="hint" style="text-align:center;margin-top:12px">We read every message. Name and email are optional - see the <a href="privacy.html" target="_blank" rel="noopener">privacy statement</a>.</p>`;
     }
 
     const errBox = (m) => `<div class="notice err" style="margin:0 0 14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg><div>${m}</div></div>`;
