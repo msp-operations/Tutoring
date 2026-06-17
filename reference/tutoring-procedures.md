@@ -9,7 +9,7 @@ tutors are sourced* - it is not a user manual for the tool itself (see the repo
 ## Who can tutor
 
 Tutoring positions are open to **eligible PhD candidates, MSP alumni and staff**.
-Candidates are normally invited by the MSP office or by Matt Baker / Ian Anthony.
+Candidates are normally invited by the MSP office.
 External-course tutors are supplied by the course coordinator; internal-education
 tutors are coordinated via **msp-tutoring@maastrichtuniversity.nl**. Unsure
 candidates should email the office before registering.
