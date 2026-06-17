@@ -66,6 +66,8 @@
     </div>
   </div>
 
+  <div class="disc-filter" id="disc-filter" role="group" aria-label="Filter by subject"></div>
+
   <div class="toolbar">
     <input id="search" type="text" aria-label="Search courses" placeholder="Search course code, name or group (e.g. CHE1101, Physics, A3)...">
     <label><input type="checkbox" id="only-open"> Only show courses with open groups</label>
@@ -120,6 +122,7 @@
   let settings = { registration_open: true, banner_message: null };
   const selected = new Map();          // groupId -> { code, title, label, group }
   const openCourses = new Set();       // course ids expanded by the user
+  const discFilter = new Set();        // active discipline keys (BIO/CHE/...); empty = all
   let period = "P1";
   let search = "";
   let onlyOpen = false;
@@ -167,9 +170,44 @@
     const hay = (c.code + " " + c.title + " " + c.groups.map((g) => g.label).join(" ")).toLowerCase();
     return hay.includes(search);
   }
+  const discKey = (c) => (window.MSPDISC ? MSPDISC.key(c.code) : (c.code || "").slice(0, 3).toUpperCase());
+  const matchesDisc = (c) => discFilter.size === 0 || discFilter.has(discKey(c));
+
+  // ---------- subject filter chips ----------
+  function renderDiscFilter() {
+    const host = $("disc-filter");
+    if (!host) return;
+    const inPeriod = catalogue.filter((c) => c.period === period);
+    const map = new Map();   // key -> open-group count
+    inPeriod.forEach((c) => {
+      const k = discKey(c);
+      const openN = c.groups.filter((g) => g.is_open && g.claimed < g.capacity).length;
+      map.set(k, (map.get(k) || 0) + openN);
+    });
+    // drop any active filter for a subject not in this period (avoids an empty board)
+    [...discFilter].forEach((k) => { if (!map.has(k)) discFilter.delete(k); });
+    const keys = [...map.keys()];
+    if (keys.length <= 1) { host.innerHTML = ""; return; }
+    const label = (k) => (window.MSPDISC ? MSPDISC.get(k).label : k);
+    keys.sort((a, b) => label(a).localeCompare(label(b)));
+    let html = `<button type="button" class="df-chip df-all${discFilter.size === 0 ? " active" : ""}" data-k="__all" aria-pressed="${discFilter.size === 0}">All subjects</button>`;
+    keys.forEach((k) => {
+      const active = discFilter.has(k);
+      const chip = window.MSPDISC ? MSPDISC.chip(k) : "";
+      html += `<button type="button" class="df-chip${active ? " active" : ""}" data-k="${k}" aria-pressed="${active}">${chip}<span>${esc(label(k))}</span><span class="df-count">${map.get(k)}</span></button>`;
+    });
+    host.innerHTML = html;
+    host.querySelectorAll(".df-chip").forEach((b) => b.addEventListener("click", () => {
+      const k = b.dataset.k;
+      if (k === "__all") discFilter.clear();
+      else if (discFilter.has(k)) discFilter.delete(k);
+      else discFilter.add(k);
+      renderAll();
+    }));
+  }
 
   // ---------- master render ----------
-  function renderAll() { renderBoardStats(); renderTimetable(); renderCatalogue(); applyView(); }
+  function renderAll() { renderDiscFilter(); renderBoardStats(); renderTimetable(); renderCatalogue(); applyView(); }
 
   function applyView() {
     $("timetable").style.display = view === "timetable" ? "" : "none";
@@ -226,7 +264,7 @@
   function renderTimetable() {
     closeChooser();
     const host = $("timetable");
-    const courses = catalogue.filter((c) => c.period === period && matchesSearch(c));
+    const courses = catalogue.filter((c) => c.period === period && matchesSearch(c) && matchesDisc(c));
     const slotMap = new Map();
     const cells = {};                   // "d|start" -> { buckets:{sig:bucket}, filled:int }
     courses.forEach((c) => c.groups.forEach((g) => {
@@ -326,7 +364,7 @@
   // ---------- COURSE LIST ----------
   function renderCatalogue() {
     const host = $("catalogue");
-    const courses = catalogue.filter((c) => c.period === period && matchesSearch(c));
+    const courses = catalogue.filter((c) => c.period === period && matchesSearch(c) && matchesDisc(c));
     host.innerHTML = "";
     let shown = 0;
     courses.forEach((c) => {
