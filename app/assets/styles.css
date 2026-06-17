@@ -356,6 +356,18 @@ footer{background:var(--navy);color:#c5d0de;border-top:4px solid var(--accent)}
 .disc-chip.sm{width:21px;height:21px;border-radius:6px}
 .disc-chip.sm svg{width:13px;height:13px}
 
+/* Subject filter chips (tap a discipline to narrow the board) */
+.disc-filter{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+.df-chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 13px 6px 7px;font:600 13px var(--sans);color:var(--navy);cursor:pointer;transition:border-color .12s,background .12s,box-shadow .12s,transform .12s}
+.df-chip:hover{border-color:var(--navy);box-shadow:0 8px 18px -14px rgba(0,28,61,.5)}
+.df-chip:active{transform:translateY(1px)}
+.df-chip .disc-chip{width:22px;height:22px;border-radius:6px}
+.df-chip .disc-chip svg{width:13px;height:13px}
+.df-chip .df-count{font:700 11px var(--sans);color:var(--muted);background:var(--bg-soft);border-radius:99px;padding:1px 7px;line-height:16px}
+.df-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.df-chip.active .df-count{background:rgba(255,255,255,.16);color:#cfe0f0}
+.df-all{padding-left:14px}
+
 /* Feedback trigger (lives in the navy footer) */
 .fb-trigger{display:inline-flex;align-items:center;gap:8px;font:600 13.5px var(--sans);
   color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);
