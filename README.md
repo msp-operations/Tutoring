@@ -28,6 +28,8 @@ double-booked. The MSP office manages everything from a private dashboard.
 
 ## Quick start
 
+- **Not a coder? Want to change wording, dates, colours, or run the office dashboard?**
+  see [`EDITING-INSTRUCTIONS.md`](EDITING-INSTRUCTIONS.md) (a plain-language guide).
 - **Run it locally / deploy it:** see [`app/README.md`](app/README.md).
 - **Course data & background context:** see [`reference/`](reference/).
 

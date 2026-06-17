@@ -16,7 +16,12 @@ window.MSP_CONFIG = {
   SUPABASE_URL: "https://jrjimjtpcofcnpynredc.supabase.co",
   SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyamltanRwY29mY25weW5yZWRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MzQ1NDAsImV4cCI6MjA5NzIxMDU0MH0.FDj0yH2M4hGelnB2cx1uyQPea0hsDOyr7tpzE3LjP2g",
 
-  // Cosmetic only.
+  // ------------------------------------------------------------------------
+  // SAFE TO EDIT ANY TIME (these are just text shown on the website).
+  // Change the words inside the quotes, keep the quotes and the comma.
+  // ------------------------------------------------------------------------
+  // The academic year shown in the page header.
   ACADEMIC_YEAR: "2026 / 2027",
+  // The email shown as the "Questions?" contact (footer + after sign-up).
   CONTACT_EMAIL: "msp-operations@maastrichtuniversity.nl"
 };
