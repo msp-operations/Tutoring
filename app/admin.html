@@ -64,6 +64,14 @@
       <button class="btn btn-ghost" id="toggle-reg">Close registration</button>
     </div>
 
+    <div class="notice info" id="period-visibility" style="align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <strong>Periods tutors can see</strong>
+        <div id="period-vis-hint" style="color:var(--muted);font-size:.92em;margin-top:2px"></div>
+      </div>
+      <div id="period-vis-toggles" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+
     <div class="stat-grid" id="stats"></div>
 
     <div class="toolbar">
@@ -167,12 +175,14 @@
 
   // ---------- data ----------
   async function loadAll() {
-    [catalogue, settings] = await Promise.all([MSP.getCatalogue(), MSP.getSettings()]);
+    // includeHidden: the office must always see every period, including ones
+    // currently hidden from tutors, so they can be managed and switched back on.
+    [catalogue, settings] = await Promise.all([MSP.getCatalogue({ includeHidden: true }), MSP.getSettings()]);
     try { regs = await MSP.admin.listRegistrations(); }
     catch (e) { notify("err", "Could not load registrations: " + (e.message || e)); regs = []; }
     try { feedback = await MSP.admin.listFeedback(); }
     catch (e) { feedback = []; }
-    renderRegToggle(); renderStats(); renderPeriodFilters(); renderTable(); renderAdmGroups(); renderFeedback();
+    renderRegToggle(); renderPeriodVisibility(); renderStats(); renderPeriodFilters(); renderTable(); renderAdmGroups(); renderFeedback();
   }
 
   // ---------- feedback ----------
@@ -216,6 +226,29 @@
     const btn = $("toggle-reg");
     btn.textContent = open ? "Close registration" : "Re-open registration";
     btn.onclick = async () => { await MSP.admin.setRegistrationOpen(!open); await loadAll(); };
+  }
+
+  // Which periods the public register page shows. Everything stays in this
+  // dashboard either way, so hiding a period never hides it from the office.
+  function renderPeriodVisibility() {
+    const all = [...new Set(catalogue.map((c) => c.period))].sort();
+    const stored = settings.active_periods;
+    const active = Array.isArray(stored) && stored.length ? stored.filter((p) => all.includes(p)) : all.slice();
+    const label = (p) => "Period " + p.replace(/^P/, "");
+    $("period-vis-hint").textContent = active.length === all.length
+      ? "Tutors see every period."
+      : "Tutors only see " + active.map(label).join(", ") + ". The rest are managed here as usual.";
+    $("period-vis-toggles").innerHTML = all.map((p) =>
+      `<button class="btn ${active.includes(p) ? "" : "btn-ghost"}" data-vis="${p}">${label(p)}: ${active.includes(p) ? "shown" : "hidden"}</button>`).join("");
+    $("period-vis-toggles").querySelectorAll("button").forEach((b) => b.addEventListener("click", async () => {
+      const p = b.dataset.vis;
+      const next = active.includes(p) ? active.filter((x) => x !== p) : all.filter((x) => active.includes(x) || x === p);
+      if (!next.length) { notify("err", "At least one period has to stay visible to tutors."); return; }
+      try {
+        await MSP.admin.setActivePeriods(next.length === all.length ? null : next);
+        await loadAll();
+      } catch (e) { notify("err", "Could not change what tutors see: " + (e.message || e)); }
+    }));
   }
 
   function confirmed(r) { return r.status === "confirmed"; }
