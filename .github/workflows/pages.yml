@@ -6,6 +6,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    # The keep-alive workflow commits a timestamp file. That is not a site
+    # change, so it must not trigger a redeploy.
+    paths-ignore: ['.keepalive']
   workflow_dispatch:
 
 permissions:
@@ -32,6 +35,11 @@ jobs:
           mkdir -p _site
           cp index.html _site/index.html
           cp -r app _site/app
+          # The custom domain must ship inside the artifact. With Actions-based
+          # Pages, GitHub does not commit a CNAME for you the way it does for a
+          # branch deploy, and a deployment without one clears the custom-domain
+          # setting. Without this line msp-tutoring.nl unsets itself on a push.
+          cp CNAME _site/CNAME
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
