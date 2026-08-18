@@ -40,7 +40,14 @@
   };
 
   // Returns: [{ id, code, title, period, department, groups:[{id,label,day1,...,capacity,claimed,is_open}] }]
-  MSP.getCatalogue = async function () {
+  //
+  // Public pages only get the periods the office has made visible
+  // (app_settings.active_periods). NULL or empty in the database means "show
+  // everything", which is how this behaved before that column existed.
+  // Pass { includeHidden: true } from the Office Dashboard, which must always
+  // see every period so hidden ones can still be managed and switched back on.
+  MSP.getCatalogue = async function (opts) {
+    const includeHidden = !!(opts && opts.includeHidden);
     if (!client) {
       // preview mode - synthesise ids from the bundled dataset
       const demo = window.MSP_DEMO_DATA || [];
@@ -55,11 +62,15 @@
         })),
       }));
     }
-    const [{ data: courses, error: ce }, { data: groups, error: ge }] = await Promise.all([
+    const [{ data: courses, error: ce }, { data: groups, error: ge }, settings] = await Promise.all([
       client.from("course").select("*").order("sort"),
       client.from("tutorial_group").select("*").order("sort"),
+      includeHidden ? Promise.resolve(null) : MSP.getSettings(),
     ]);
     if (ce) throw ce; if (ge) throw ge;
+    const active = settings && settings.active_periods;
+    const visible = (c) =>
+      includeHidden || !Array.isArray(active) || !active.length || active.includes(c.period);
     const byCourse = {};
     (groups || []).forEach((g) => {
       (byCourse[g.course_id] = byCourse[g.course_id] || []).push({
@@ -68,7 +79,7 @@
         capacity: g.capacity, claimed: g.claimed_count, is_open: g.is_open,
       });
     });
-    return (courses || []).map((c) => ({
+    return (courses || []).filter(visible).map((c) => ({
       id: c.id, code: c.code, title: c.title, period: c.period,
       department: c.department, coordinator: c.coordinator, coordinator_email: c.coordinator_email,
       prerequisites: c.prerequisites, description: c.description, details: c.details || {},
@@ -161,6 +172,12 @@
     },
     async withdraw(regId) {
       const { error } = await client.from("registration").update({ status: "withdrawn" }).eq("id", regId);
+      if (error) throw error;
+    },
+    // Which periods tutors can see. Pass null (or every period) to show all.
+    async setActivePeriods(periods) {
+      const value = periods && periods.length ? periods : null;
+      const { error } = await client.from("app_settings").update({ active_periods: value }).eq("id", 1);
       if (error) throw error;
     },
     async setRegistrationOpen(open, banner) {

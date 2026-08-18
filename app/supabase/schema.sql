@@ -84,9 +84,17 @@ create table if not exists admin_user (
 create table if not exists app_settings (
   id                 int primary key default 1 check (id = 1),
   registration_open  boolean not null default true,
-  banner_message     text
+  banner_message     text,
+  -- Which teaching periods tutors are shown. NULL or empty means every period,
+  -- which is how the tool behaved before this column existed. Set it to for
+  -- example '{P2}' to run a single-period round while the other periods stay
+  -- visible to the office in the dashboard. Managed from the Office Dashboard,
+  -- no SQL needed.
+  active_periods     text[]
 );
 insert into app_settings (id) values (1) on conflict (id) do nothing;
+-- Upgrade older deployments that pre-date period visibility:
+alter table app_settings add column if not exists active_periods text[];
 
 -- ---------------------------------------------------------------------------
 -- Keep claimed_count in sync with confirmed registrations
