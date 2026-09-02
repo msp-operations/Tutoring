@@ -54,6 +54,7 @@
 
 <main>
   <div id="notice-area"></div>
+  <div id="claim-banner"></div>
 
   <div class="controls">
     <div class="tabs" id="period-tabs" role="tablist" aria-label="Teaching period"></div>
@@ -541,8 +542,10 @@
       type: $("f-type").value, affiliation: $("f-aff").value.trim(), motivation: $("f-note").value.trim(),
     };
     try {
+      const items = [...selected.values()].map((s) => ({ code: s.code, title: s.title, label: s.label, times: fmtTimes(s.group) }));
       await MSP.claim([...selected.keys()], info);
-      successScreen(info.name);
+      const rec = saveClaimRecord(info.name, items);
+      successScreen(info.name, rec);
       selected.clear();
       await reload();
       renderCart();
@@ -560,25 +563,118 @@
     }
   }
 
-  function successScreen(name) {
+  function successScreen(name, rec) {
     const contact = (window.MSP_CONFIG && MSP_CONFIG.CONTACT_EMAIL) || "";
+    const h5 = "font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:0 0 7px";
     $("modal-title").textContent = "You're registered";
     $("modal-body").innerHTML = `
       <div class="success-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
       <div class="notice ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
         <div>Thank you, ${esc(name) || "tutor"}. Your group(s) are now locked to you.</div></div>
       <div style="margin:6px 2px 4px">
-        <h5 style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:0 0 7px">What happens next</h5>
+        <h5 style="${h5}">Your groups</h5>
+        <ul style="margin:0 0 10px;padding-left:18px;font-size:13.5px;color:#33405a;line-height:1.65">${claimListHTML(rec)}</ul>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn btn-ghost" data-copy-summary style="flex:1">Copy summary</button>
+          <a class="btn btn-ghost" data-mail-summary href="#" style="flex:1">Email me a copy</a>
+        </div>
+      </div>
+      <div style="margin:12px 2px 4px">
+        <h5 style="${h5}">What happens next</h5>
         <ul style="margin:0;padding-left:18px;font-size:13.5px;color:#33405a;line-height:1.65">
+          <li>This summary also stays at the top of this page (on this device), so you can come back to it.</li>
           <li>The MSP office now has your details and will be in touch about the practicalities.</li>
           <li>The detailed timetable is released about 2.5 weeks before teaching starts; the draft may still shift.</li>
-          <li>Keep an eye on your email for confirmation and any updates.</li>
         </ul>
       </div>
       ${contact ? `<p class="hint" style="text-align:center;margin-top:14px">Questions about tutoring? <a href="mailto:${esc(contact)}">${esc(contact)}</a></p>` : ""}
       <button class="btn btn-ghost" id="done-btn" style="width:100%;margin-top:6px">Back to the list</button>`;
+    wireSummaryActions($("modal-body"), rec);
     $("done-btn").addEventListener("click", () => { showModal(false); $("modal-title").textContent = "Your details"; });
     if (window.MSPUI) MSPUI.confetti();
+  }
+
+  // ---------- persistent claim confirmation ----------
+  // Answers the first live feedback (2 Sep 2026): after confirming, tutors
+  // could no longer see which groups they had claimed. The claim is stored in
+  // this browser only (localStorage) and shown as a banner until dismissed.
+  const CLAIM_KEY = "msp_claim_confirmation";
+
+  function saveClaimRecord(name, items) {
+    const rec = { name: name || "", when: new Date().toISOString(), items };
+    try {
+      const prev = JSON.parse(localStorage.getItem(CLAIM_KEY) || "null");
+      if (prev && Array.isArray(prev.items)) {
+        const latest = new Set(items.map((i) => i.code + "|" + i.label));
+        rec.items = prev.items.filter((i) => !latest.has(i.code + "|" + i.label)).concat(items);
+      }
+    } catch (e) { /* unreadable stored copy: start fresh */ }
+    try { localStorage.setItem(CLAIM_KEY, JSON.stringify(rec)); } catch (e) { /* storage blocked: banner still shows this visit */ }
+    renderClaimBanner(rec);
+    return rec;
+  }
+
+  function claimWhen(rec) {
+    const d = new Date(rec.when);
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) +
+      ", " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function claimSummaryText(rec) {
+    const contact = (window.MSP_CONFIG && MSP_CONFIG.CONTACT_EMAIL) || "";
+    return [
+      "MSP Tutor Registration - your groups",
+      (rec.name ? rec.name + ", registered " : "Registered ") + claimWhen(rec) + ":",
+      "",
+      ...rec.items.map((i) => "- " + i.code + " " + i.label + " - " + i.title + (i.times ? " (" + i.times + ")" : "")),
+      "",
+      contact ? "Questions: " + contact : "",
+    ].join("\n").trim();
+  }
+
+  const claimListHTML = (rec) => rec.items.map((i) =>
+    `<li><strong>${esc(i.code)} ${esc(i.label)}</strong> - ${esc(i.title)}${i.times ? ` <span style="color:var(--muted)">(${esc(i.times)})</span>` : ""}</li>`).join("");
+
+  function wireSummaryActions(root, rec) {
+    const copyBtn = root.querySelector("[data-copy-summary]");
+    if (copyBtn) copyBtn.addEventListener("click", async () => {
+      const original = copyBtn.textContent;
+      try { await navigator.clipboard.writeText(claimSummaryText(rec)); copyBtn.textContent = "Copied"; }
+      catch (e) { copyBtn.textContent = "Copying blocked by browser"; }
+      setTimeout(() => { copyBtn.textContent = original; }, 2500);
+    });
+    const mail = root.querySelector("[data-mail-summary]");
+    if (mail) mail.href = "mailto:?subject=" + encodeURIComponent("MSP tutoring registration - my groups")
+      + "&body=" + encodeURIComponent(claimSummaryText(rec));
+  }
+
+  function renderClaimBanner(rec) {
+    const host = $("claim-banner");
+    if (!host) return;
+    if (!rec || !Array.isArray(rec.items) || !rec.items.length) { host.innerHTML = ""; return; }
+    const linkBtn = "background:none;border:0;padding:0;color:var(--blue);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline";
+    host.innerHTML = `
+      <div class="notice ok" style="align-items:flex-start">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <div style="flex:1">
+          <strong>Your registration (${esc(claimWhen(rec))})</strong>
+          <ul style="margin:6px 0 8px;padding-left:18px">${claimListHTML(rec)}</ul>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px">
+            <button type="button" data-copy-summary style="${linkBtn}">Copy summary</button>
+            <a data-mail-summary href="#" style="font-size:13px">Email me a copy</a>
+            <button type="button" data-hide-banner style="${linkBtn};color:var(--muted)">Hide</button>
+          </div>
+        </div>
+      </div>`;
+    wireSummaryActions(host, rec);
+    host.querySelector("[data-hide-banner]").addEventListener("click", () => {
+      try { localStorage.removeItem(CLAIM_KEY); } catch (e) { /* nothing stored */ }
+      host.innerHTML = "";
+    });
+  }
+
+  function restoreClaimBanner() {
+    try { renderClaimBanner(JSON.parse(localStorage.getItem(CLAIM_KEY) || "null")); } catch (e) { /* no usable stored claim */ }
   }
 
   // ---------- misc ----------
@@ -622,6 +718,7 @@
   }
 
   async function init() {
+    restoreClaimBanner();
     $("timetable").innerHTML = skeletonHTML();
     if (MSP.mode === "preview") {
       notify("info", "<strong>Preview mode.</strong> The catalogue is real but live sign-ups are off until Supabase is connected (see <code>app/assets/config.js</code>).");
