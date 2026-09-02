@@ -1132,7 +1132,7 @@ window.MSP_DEMO_DATA = [
     "end2": "10:00",
     "capacity": 1,
     "claimed": 0,
-    "is_open": true
+    "is_open": false
    },
    {
     "label": "A2+B2",
@@ -1156,7 +1156,7 @@ window.MSP_DEMO_DATA = [
     "end2": "10:00",
     "capacity": 1,
     "claimed": 0,
-    "is_open": true
+    "is_open": false
    },
    {
     "label": "A4+B4",
@@ -1173,11 +1173,11 @@ window.MSP_DEMO_DATA = [
    {
     "label": "A5+B5",
     "day1": "Mon",
-    "start1": "08:30",
-    "end1": "10:00",
+    "start1": "10:15",
+    "end1": "11:45",
     "day2": "Wed",
-    "start2": "08:30",
-    "end2": "10:00",
+    "start2": "10:15",
+    "end2": "11:45",
     "capacity": 1,
     "claimed": 0,
     "is_open": true
@@ -1192,7 +1192,7 @@ window.MSP_DEMO_DATA = [
     "end2": "11:45",
     "capacity": 1,
     "claimed": 0,
-    "is_open": true
+    "is_open": false
    },
    {
     "label": "A7+B7",
@@ -1216,16 +1216,16 @@ window.MSP_DEMO_DATA = [
     "end2": "11:45",
     "capacity": 1,
     "claimed": 0,
-    "is_open": true
+    "is_open": false
    },
    {
     "label": "A9+B9",
     "day1": "Mon",
-    "start1": "10:15",
-    "end1": "11:45",
+    "start1": "14:00",
+    "end1": "15:30",
     "day2": "Wed",
-    "start2": "10:15",
-    "end2": "11:45",
+    "start2": "14:00",
+    "end2": "15:30",
     "capacity": 1,
     "claimed": 0,
     "is_open": true
@@ -1233,14 +1233,14 @@ window.MSP_DEMO_DATA = [
    {
     "label": "A10+B10",
     "day1": "Mon",
-    "start1": "10:15",
-    "end1": "11:45",
+    "start1": "14:00",
+    "end1": "15:30",
     "day2": "Wed",
-    "start2": "10:15",
-    "end2": "11:45",
+    "start2": "14:00",
+    "end2": "15:30",
     "capacity": 1,
     "claimed": 0,
-    "is_open": true
+    "is_open": false
    },
    {
     "label": "A11+B11",
@@ -1252,7 +1252,7 @@ window.MSP_DEMO_DATA = [
     "end2": "15:30",
     "capacity": 1,
     "claimed": 0,
-    "is_open": true
+    "is_open": false
    },
    {
     "label": "A12+B12",
@@ -1269,23 +1269,23 @@ window.MSP_DEMO_DATA = [
    {
     "label": "A13+B13",
     "day1": "Mon",
-    "start1": "14:00",
-    "end1": "15:30",
+    "start1": "15:45",
+    "end1": "17:15",
     "day2": "Wed",
-    "start2": "14:00",
-    "end2": "15:30",
+    "start2": "15:45",
+    "end2": "17:15",
     "capacity": 1,
     "claimed": 0,
-    "is_open": true
+    "is_open": false
    },
    {
     "label": "A14+B14",
     "day1": "Mon",
-    "start1": "14:00",
-    "end1": "15:30",
+    "start1": "15:45",
+    "end1": "17:15",
     "day2": "Wed",
-    "start2": "14:00",
-    "end2": "15:30",
+    "start2": "15:45",
+    "end2": "17:15",
     "capacity": 1,
     "claimed": 0,
     "is_open": true
@@ -1293,11 +1293,11 @@ window.MSP_DEMO_DATA = [
    {
     "label": "A15+B15",
     "day1": "Mon",
-    "start1": "14:00",
-    "end1": "15:30",
+    "start1": "15:45",
+    "end1": "17:15",
     "day2": "Wed",
-    "start2": "14:00",
-    "end2": "15:30",
+    "start2": "15:45",
+    "end2": "17:15",
     "capacity": 1,
     "claimed": 0,
     "is_open": true
@@ -1312,55 +1312,7 @@ window.MSP_DEMO_DATA = [
     "end2": "17:15",
     "capacity": 1,
     "claimed": 0,
-    "is_open": true
-   },
-   {
-    "label": "A17+B17",
-    "day1": "Mon",
-    "start1": "15:45",
-    "end1": "17:15",
-    "day2": "Wed",
-    "start2": "15:45",
-    "end2": "17:15",
-    "capacity": 1,
-    "claimed": 0,
-    "is_open": true
-   },
-   {
-    "label": "A18+B18",
-    "day1": "Mon",
-    "start1": "15:45",
-    "end1": "17:15",
-    "day2": "Wed",
-    "start2": "15:45",
-    "end2": "17:15",
-    "capacity": 1,
-    "claimed": 0,
-    "is_open": true
-   },
-   {
-    "label": "A19+B19",
-    "day1": "Mon",
-    "start1": "15:45",
-    "end1": "17:15",
-    "day2": "Wed",
-    "start2": "15:45",
-    "end2": "17:15",
-    "capacity": 1,
-    "claimed": 0,
-    "is_open": true
-   },
-   {
-    "label": "A20+B20",
-    "day1": "Mon",
-    "start1": "15:45",
-    "end1": "17:15",
-    "day2": "Wed",
-    "start2": "15:45",
-    "end2": "17:15",
-    "capacity": 1,
-    "claimed": 0,
-    "is_open": true
+    "is_open": false
    }
   ]
  }
