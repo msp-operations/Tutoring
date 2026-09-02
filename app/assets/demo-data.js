@@ -1312,7 +1312,7 @@ window.MSP_DEMO_DATA = [
     "end2": "17:15",
     "capacity": 1,
     "claimed": 0,
-    "is_open": false
+    "is_open": true
    }
   ]
  },

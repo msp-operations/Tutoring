@@ -45,6 +45,8 @@ insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, 
 insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, end2, capacity, sort) select id, 'A14+B14', 'Tue', '10:15', '11:45', 'Fri', '08:30', '10:00', 1, 13 from course where code='CHE1101' and period='P1';
 insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, end2, capacity, sort) select id, 'A15+B15', 'Tue', '10:15', '11:45', 'Fri', '08:30', '10:00', 1, 14 from course where code='CHE1101' and period='P1';
 insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, end2, capacity, sort) select id, 'A16+B16', 'Tue', '10:15', '11:45', 'Fri', '08:30', '10:00', 1, 15 from course where code='CHE1101' and period='P1';
+-- (A16+B16 confirmed open by Severine 2 Sep: her "14, 15 and 15" meant 15 AND
+-- 16, so 9 vacancies, 7 taken.)
 -- PRA1102 P2 added 2 Sep 2026: 30 dated half-day lab sessions (15 blocks x
 -- morning/afternoon), each needing 2 tutors, all open (Severine: "PRA1102
 -- has noone yet"). Transcribed from her Teams schedule screenshots, saved in
@@ -150,7 +152,7 @@ insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, 
 insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, end2, capacity, is_open, sort) select id, 'A13+B13', 'Mon', '15:45', '17:15', 'Wed', '15:45', '17:15', 1, false, 12 from course where code='BIO1101' and period='P2';
 insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, end2, capacity, is_open, sort) select id, 'A14+B14', 'Mon', '15:45', '17:15', 'Wed', '15:45', '17:15', 1, true, 13 from course where code='BIO1101' and period='P2';
 insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, end2, capacity, is_open, sort) select id, 'A15+B15', 'Mon', '15:45', '17:15', 'Wed', '15:45', '17:15', 1, true, 14 from course where code='BIO1101' and period='P2';
-insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, end2, capacity, is_open, sort) select id, 'A16+B16', 'Mon', '15:45', '17:15', 'Wed', '15:45', '17:15', 1, false, 15 from course where code='BIO1101' and period='P2';
+insert into tutorial_group (course_id, label, day1, start1, end1, day2, start2, end2, capacity, is_open, sort) select id, 'A16+B16', 'Mon', '15:45', '17:15', 'Wed', '15:45', '17:15', 1, true, 15 from course where code='BIO1101' and period='P2';
 
 -- Pre-assigned tutors
 insert into registration (group_id, tutor_name, tutor_type, affiliation, status) select g.id, 'Pre-assigned tutor', 'Pre-assigned', 'MSP', 'confirmed' from tutorial_group g join course c on c.id=g.course_id where c.code='CHE3010' and c.period='P1' and g.label='A1+B1';
