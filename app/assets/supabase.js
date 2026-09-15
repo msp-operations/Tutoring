@@ -76,13 +76,14 @@
       (byCourse[g.course_id] = byCourse[g.course_id] || []).push({
         id: g.id, label: g.label, day1: g.day1, start1: g.start1, end1: g.end1,
         day2: g.day2, start2: g.start2, end2: g.end2,
-        capacity: g.capacity, claimed: g.claimed_count, is_open: g.is_open,
+        capacity: g.capacity, claimed: g.claimed_count, is_open: g.is_open, sort: g.sort,
       });
     });
     return (courses || []).filter(visible).map((c) => ({
       id: c.id, code: c.code, title: c.title, period: c.period,
       department: c.department, coordinator: c.coordinator, coordinator_email: c.coordinator_email,
       prerequisites: c.prerequisites, description: c.description, details: c.details || {},
+      sort: c.sort,
       groups: byCourse[c.id] || [],
     }));
   };
@@ -131,6 +132,7 @@
     const ch = client
       .channel("msp-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "tutorial_group" }, onChange)
+      .on("postgres_changes", { event: "*", schema: "public", table: "course" }, onChange)
       .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, onChange)
       .subscribe();
     return () => client.removeChannel(ch);
@@ -169,6 +171,70 @@
     async updateGroup(id, patch) {
       const { error } = await client.from("tutorial_group").update(patch).eq("id", id);
       if (error) throw error;
+    },
+
+    // ---- catalogue management (Courses & groups in the dashboard) ----------
+    // These exist so the office never has to write SQL to run a new period.
+    // The matching database permissions live in app/supabase/admin-catalogue.sql;
+    // if these throw a "row-level security" error, that file has not been run yet.
+    async createCourse(fields) {
+      const { data, error } = await client.from("course").insert(fields).select().single();
+      if (error) throw error;
+      return data;
+    },
+    async updateCourse(id, patch) {
+      const { error } = await client.from("course").update(patch).eq("id", id);
+      if (error) throw error;
+    },
+    async createGroup(fields) {
+      const { data, error } = await client.from("tutorial_group").insert(fields).select().single();
+      if (error) throw error;
+      return data;
+    },
+    // Deletes are refused by the database while anyone holds a confirmed place,
+    // in which case the delete matches no rows rather than failing loudly. We
+    // turn that silence into a real message so nobody thinks it worked.
+    async deleteGroup(id) {
+      const { data, error } = await client.from("tutorial_group").delete().eq("id", id).select("id");
+      if (error) throw error;
+      if (!data || !data.length) throw new Error("BLOCKED_BY_REGISTRATION");
+    },
+    async deleteCourse(id) {
+      const { data, error } = await client.from("course").delete().eq("id", id).select("id");
+      if (error) throw error;
+      if (!data || !data.length) throw new Error("BLOCKED_BY_REGISTRATION");
+    },
+    // Copy a whole course, with all of its groups, into another period - the
+    // fast way to build next period's catalogue. The copy always starts empty:
+    // no registrations come along, and every group is open.
+    async duplicateCourse(courseId, targetPeriod) {
+      const { data: src, error: e1 } =
+        await client.from("course").select("*").eq("id", courseId).single();
+      if (e1) throw e1;
+      const { data: groups, error: e2 } =
+        await client.from("tutorial_group").select("*").eq("course_id", courseId).order("sort");
+      if (e2) throw e2;
+
+      const copy = Object.assign({}, src, { period: targetPeriod });
+      delete copy.id; delete copy.created_at;
+      const { data: made, error: e3 } =
+        await client.from("course").insert(copy).select().single();
+      if (e3) throw e3;
+
+      if (groups && groups.length) {
+        const rows = groups.map((g) => {
+          const c = Object.assign({}, g, { course_id: made.id, claimed_count: 0, is_open: true });
+          delete c.id; delete c.created_at;
+          return c;
+        });
+        const { error: e4 } = await client.from("tutorial_group").insert(rows);
+        if (e4) {
+          // The course landed but its groups did not. Say so plainly; the empty
+          // course can be deleted from the dashboard because nobody claimed it.
+          throw new Error("The course was copied but its groups were not: " + (e4.message || e4));
+        }
+      }
+      return made;
     },
     async withdraw(regId) {
       const { error } = await client.from("registration").update({ status: "withdrawn" }).eq("id", regId);

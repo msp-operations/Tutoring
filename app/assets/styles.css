@@ -231,7 +231,7 @@ h2.section{font-size:24px;margin:0 0 12px}
 label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px}
 label .req{color:var(--accent)}
 .hint{font-size:12px;color:var(--muted);margin-top:5px}
-input[type=text],input[type=email],input[type=tel],input[type=password],select,textarea{width:100%;font:inherit;font-size:14.5px;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px 13px;transition:border-color .12s,box-shadow .12s}
+input[type=text],input[type=email],input[type=tel],input[type=password],input[type=number],input[type=time],select,textarea{width:100%;font:inherit;font-size:14.5px;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px 13px;transition:border-color .12s,box-shadow .12s}
 textarea{min-height:90px;resize:vertical}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -380,3 +380,18 @@ footer{background:var(--navy);color:#c5d0de;border-top:4px solid var(--accent)}
 .fb-trigger svg{width:16px;height:16px}
 .fb-trigger-float{position:fixed;right:18px;bottom:18px;z-index:60;color:#fff;
   background:var(--navy);border-color:var(--navy-2);box-shadow:0 12px 28px -12px rgba(0,28,61,.6)}
+
+/* ---- office dashboard: catalogue editing ---------------------------------- */
+.card-acts{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.btn-mini{padding:5px 10px;font-size:12px;border-radius:6px;font-weight:700}
+.btn-danger{background:#fff;color:var(--red);border-color:#f0c4be}
+.btn-danger:hover{background:var(--red-bg);border-color:var(--red)}
+.gacts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+/* the office cards carry more controls than the public ones, so give them room
+   to keep Need / Close / Edit / Remove on a single line */
+#adm-groups .groups{grid-template-columns:repeat(auto-fill,minmax(272px,1fr))}
+.group-add{border:1.5px dashed var(--line);border-radius:9px;padding:12px 13px;background:var(--bg-soft);
+  color:var(--muted);font:700 13.5px var(--sans);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:8px;min-height:104px;transition:border-color .12s,color .12s,background .12s}
+.group-add:hover{border-color:var(--accent);color:var(--accent-press);background:var(--accent-tint)}
+.modal .body .lead{font-size:14px}
