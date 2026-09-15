@@ -7,7 +7,8 @@ staff see which tutorial groups are open right now and claim one before anyone
 else - when a group is claimed it disappears for everyone, so no group is ever
 double-booked. The MSP office manages everything from a private dashboard.
 
-**Live site:** https://beebzoo.github.io/Tutoring/
+**Live site:** https://msp-tutoring.nl
+**Office dashboard:** https://msp-tutoring.nl/app/admin.html
 
 ## Repository layout
 
@@ -19,7 +20,8 @@ double-booked. The MSP office manages everything from a private dashboard.
 │   ├─ register.html     Tutor flow: browse open groups -> pick -> confirm
 │   ├─ admin.html        Office dashboard (login, registrations, manage groups)
 │   ├─ assets/           config.js (your Supabase keys), styles, data layer, images
-│   ├─ supabase/         schema.sql, seed.sql (catalogue), update-course-details.sql
+│   ├─ supabase/         schema.sql, seed.sql (catalogue), update-course-details.sql,
+│   │                    admin-catalogue.sql (lets the office edit courses in the UI)
 │   └─ README.md         Full setup / "going live" guide  <- start here to deploy
 ├─ reference/        Curated 2026/27 context (catalogue, coordinators, schedule,
 │                    procedures) + source files. Not deployed; for maintainers.
@@ -28,8 +30,9 @@ double-booked. The MSP office manages everything from a private dashboard.
 
 ## Quick start
 
-- **Not a coder? Want to change wording, dates, colours, or run the office dashboard?**
-  see [`EDITING-INSTRUCTIONS.md`](EDITING-INSTRUCTIONS.md) (a plain-language guide).
+- **Running the tool: adding courses and groups, setting up a new period, managing sign-ups?**
+  see [`EDITING-INSTRUCTIONS.md`](EDITING-INSTRUCTIONS.md). No coding needed; it is all
+  buttons in the Office Dashboard.
 - **Run it locally / deploy it:** see [`app/README.md`](app/README.md).
 - **Course data & background context:** see [`reference/`](reference/).
 

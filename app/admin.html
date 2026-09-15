@@ -93,8 +93,11 @@
       </table>
     </div>
 
-    <h2 class="section" style="margin-top:48px">Groups &amp; capacity</h2>
-    <p class="lead">Adjust how many tutors a group needs, or close a group. Releasing a tutor reopens their group instantly for everyone.</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:48px 0 8px">
+      <h2 class="section" style="margin:0">Courses &amp; groups</h2>
+      <button class="btn btn-primary" id="add-course-btn" style="padding:10px 18px;font-size:14px">+ Add course</button>
+    </div>
+    <p class="lead">Everything tutors can sign up for. Add a course, add its groups, change how many tutors a group needs, or close one. Releasing a tutor reopens their group instantly for everyone.</p>
     <div class="tabs" id="adm-period-tabs" style="margin-top:18px"></div>
     <div id="adm-groups"></div>
 
@@ -113,6 +116,16 @@
     </div>
   </div>
 </main>
+
+<!-- form modal: add / edit a course or a group -->
+<div class="modal-overlay" id="overlay"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="head">
+    <h3 id="modal-title">Edit</h3>
+    <button class="close" id="modal-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="body" id="modal-body"></div>
+</div>
 
 <footer>
   <div class="footer-inner">
@@ -134,8 +147,10 @@
   let catalogue = [], regs = [], settings = {}, admPeriod = "P1", feedback = [];
   const esc = (s) => (s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"));
 
+  const NOTICE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>';
+  const noticeHTML = (kind, msg) => `<div class="notice ${kind}">${NOTICE_SVG}<div>${msg}</div></div>`;
   function notify(kind, msg, where) {
-    (where || $("notice-area")).innerHTML = `<div class="notice ${kind}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg><div>${msg}</div></div>`;
+    (where || $("notice-area")).innerHTML = noticeHTML(kind, msg);
   }
   const g_day = (d) => ({ mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri" }[(d||"").toLowerCase().slice(0,3)] || d || "");
   const fmtTimes = (g) => {
@@ -325,29 +340,46 @@
     const courses = catalogue.filter((c) => c.period === admPeriod);
     const regByGroup = {};
     regs.filter(confirmed).forEach((r) => (regByGroup[r.group_id] = regByGroup[r.group_id] || []).push(r));
+
+    if (!courses.length) {
+      host.innerHTML = noticeHTML("info",
+        `Nothing in Period ${esc(admPeriod.replace(/^P/, ""))} yet. Use <strong>+ Add course</strong> above to build it,
+         or open a period that already has courses and use <strong>Copy</strong> to bring one across.`);
+      return;
+    }
+
     host.innerHTML = courses.map((c) => `
       <div class="course open" style="margin-top:14px">
         <div class="course-head" style="cursor:default">
-          ${disc(c.code)}<span class="course-code">${c.code}</span><span class="course-title">${c.title}</span>
-          ${c.coordinator ? `<span class="course-meta">${c.coordinator}${c.coordinator_email ? ` · ${c.coordinator_email}` : ""}</span>` : ""}
+          ${disc(c.code)}<span class="course-code">${esc(c.code)}</span><span class="course-title">${esc(c.title)}</span>
+          ${c.coordinator ? `<span class="course-meta">${esc(c.coordinator)}${c.coordinator_email ? ` &middot; ${esc(c.coordinator_email)}` : ""}</span>` : ""}
+          <div class="card-acts">
+            <button class="btn btn-ghost btn-mini" data-cedit="${c.id}">Edit course</button>
+            <button class="btn btn-ghost btn-mini" data-ccopy="${c.id}">Copy</button>
+            <button class="btn btn-ghost btn-mini btn-danger" data-cdel="${c.id}">Delete</button>
+          </div>
         </div>
         <div class="groups" style="display:grid">
           ${c.groups.map((g) => {
             const taken = (regByGroup[g.id] || []).map((r) => r.tutor_name).join(", ");
             const full = g.claimed >= g.capacity;
             return `<div class="group ${full ? "full" : ""}" style="cursor:default">
-              <div class="glabel">${g.label}</div>
+              <div class="glabel">${esc(g.label)}</div>
               <div class="gtimes">${fmtTimes(g) || "&nbsp;"}</div>
-              <div class="gstatus ${full ? "s-full" : "s-open"}"><span class="dotstat"></span>${g.claimed}/${g.capacity} filled${taken ? " · " + taken : ""}</div>
-              <div style="display:flex;gap:6px;margin-top:10px;align-items:center">
+              <div class="gstatus ${full ? "s-full" : "s-open"}"><span class="dotstat"></span>${g.claimed}/${g.capacity} filled${taken ? " &middot; " + esc(taken) : ""}</div>
+              <div class="gacts">
                 <label style="margin:0;font-size:11px;color:var(--muted)">Need</label>
                 <input type="number" min="0" value="${g.capacity}" data-cap="${g.id}" style="width:54px;padding:5px 7px">
-                <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" data-toggle="${g.id}" data-open="${g.is_open}">${g.is_open ? "Close" : "Open"}</button>
+                <button class="btn btn-ghost btn-mini" data-toggle="${g.id}" data-open="${g.is_open}">${g.is_open ? "Close" : "Open"}</button>
+                <button class="btn btn-ghost btn-mini" data-gedit="${g.id}">Edit</button>
+                <button class="btn btn-ghost btn-mini btn-danger" data-gdel="${g.id}">Remove</button>
               </div>
             </div>`;
           }).join("")}
+          <button class="group-add" data-addgroup="${c.id}">+ Add group</button>
         </div>
       </div>`).join("");
+
     host.querySelectorAll("[data-cap]").forEach((inp) => inp.addEventListener("change", async () => {
       const v = Math.max(0, parseInt(inp.value || "0", 10));
       try { await MSP.admin.updateGroup(inp.dataset.cap, { capacity: v }); await loadAll(); }
@@ -357,7 +389,314 @@
       try { await MSP.admin.updateGroup(b.dataset.toggle, { is_open: b.dataset.open !== "true" }); await loadAll(); }
       catch (e) { notify("err", "Could not change group: " + (e.message || e)); }
     }));
+
+    // catalogue editing
+    host.querySelectorAll("[data-cedit]").forEach((b) =>
+      b.addEventListener("click", () => openCourseForm(findCourse(b.dataset.cedit))));
+    host.querySelectorAll("[data-ccopy]").forEach((b) =>
+      b.addEventListener("click", () => openCopyForm(findCourse(b.dataset.ccopy))));
+    host.querySelectorAll("[data-cdel]").forEach((b) =>
+      b.addEventListener("click", () => openCourseDelete(findCourse(b.dataset.cdel))));
+    host.querySelectorAll("[data-addgroup]").forEach((b) =>
+      b.addEventListener("click", () => openGroupForm(findCourse(b.dataset.addgroup), null)));
+    host.querySelectorAll("[data-gedit]").forEach((b) => b.addEventListener("click", () => {
+      const hit = findGroup(b.dataset.gedit);
+      if (hit) openGroupForm(hit.course, hit.group);
+    }));
+    host.querySelectorAll("[data-gdel]").forEach((b) => b.addEventListener("click", () => {
+      const hit = findGroup(b.dataset.gdel);
+      if (hit) removeGroup(hit.course, hit.group);
+    }));
   }
+
+  // ---------- catalogue editing ----------
+  // All of this exists so that adding a course, or setting up a whole new
+  // period, never needs SQL. The office guide is EDITING-INSTRUCTIONS.md; the
+  // database permissions it relies on are in app/supabase/admin-catalogue.sql.
+  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const canonDay = (d) => DAYS.find((x) => x.toLowerCase() === String(d || "").toLowerCase().slice(0, 3)) || "";
+
+  function showModal(on) {
+    $("overlay").classList.toggle("active", on);
+    $("modal").classList.toggle("active", on);
+    if (!on) $("modal-body").innerHTML = "";
+  }
+  $("overlay").addEventListener("click", () => showModal(false));
+  $("modal-close").addEventListener("click", () => showModal(false));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") showModal(false); });
+
+  const findCourse = (id) => catalogue.find((c) => c.id === id);
+  function findGroup(id) {
+    for (const c of catalogue) {
+      const g = c.groups.find((x) => x.id === id);
+      if (g) return { course: c, group: g };
+    }
+    return null;
+  }
+  const formErr = (msg) => notify("err", msg, $("modal-msg"));
+  const periodList = () => [...new Set(catalogue.map((c) => c.period))].sort();
+  const datalist = (id) => `<datalist id="${id}">${periodList().map((p) => `<option value="${esc(p)}">`).join("")}</datalist>`;
+
+  // Turn a database error into something an office colleague can act on.
+  function saveError(e) {
+    const m = (e && (e.message || e.error_description)) || String(e);
+    if (/duplicate key|already exists|23505/i.test(m))
+      return "That course code already exists in that period. Change the code, or pick a different period.";
+    if (/row-level security|violates row-level|42501|permission denied/i.test(m))
+      return `The database has not been given permission for this yet. Someone needs to run
+              <code>app/supabase/admin-catalogue.sql</code> once in the Supabase SQL editor, then this will work.`;
+    return "Could not save: " + esc(m);
+  }
+
+  const actionRow = (saveLabel, danger) => `
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-ghost" id="f-cancel">Cancel</button>
+      <button class="btn ${danger ? "btn-ghost btn-danger" : "btn-primary"}" id="f-save">${saveLabel}</button>
+    </div>`;
+
+  // ---- add / edit a course ---------------------------------------------------
+  function openCourseForm(course) {
+    const isNew = !course;
+    const v = (k) => (isNew ? "" : esc(course[k] || ""));
+    $("modal-title").textContent = isNew ? "Add a course" : "Edit " + course.code;
+    $("modal-body").innerHTML = `
+      <div id="modal-msg"></div>
+      <div class="row2">
+        <div class="field"><label>Course code <span class="req">*</span></label>
+          <input type="text" id="f-code" value="${v("code")}" placeholder="BIO1101"></div>
+        <div class="field"><label>Period <span class="req">*</span></label>
+          <input type="text" id="f-period" list="f-period-list" value="${isNew ? esc(admPeriod) : esc(course.period)}" placeholder="P1">
+          ${datalist("f-period-list")}
+          <div class="hint">Pick an existing period, or type a new one such as P4.</div></div>
+      </div>
+      <div class="field"><label>Course title <span class="req">*</span></label>
+        <input type="text" id="f-title" value="${v("title")}" placeholder="Introduction to Biology"></div>
+      <div class="row2">
+        <div class="field"><label>Course coordinator</label>
+          <input type="text" id="f-coord" value="${v("coordinator")}" placeholder="David Cortens"></div>
+        <div class="field"><label>Coordinator email</label>
+          <input type="email" id="f-cmail" value="${v("coordinator_email")}"></div>
+      </div>
+      <div class="field"><label>Prerequisites</label>
+        <input type="text" id="f-prereq" value="${v("prerequisites")}" placeholder="MSP1000"></div>
+      <div class="field"><label>About this course</label>
+        <textarea id="f-desc" placeholder="The description tutors read when they open the course.">${v("description")}</textarea>
+        <div class="hint">Optional. Plain text, no formatting needed.</div></div>
+      ${actionRow(isNew ? "Add course" : "Save changes")}`;
+    showModal(true);
+
+    $("f-cancel").onclick = () => showModal(false);
+    $("f-save").onclick = async () => {
+      const code = $("f-code").value.trim();
+      const title = $("f-title").value.trim();
+      const period = $("f-period").value.trim().toUpperCase();
+      if (!code || !title || !period) { formErr("Course code, title and period are all required."); return; }
+      const fields = {
+        code, title, period,
+        coordinator: $("f-coord").value.trim() || null,
+        coordinator_email: $("f-cmail").value.trim() || null,
+        prerequisites: $("f-prereq").value.trim() || null,
+        description: $("f-desc").value.trim() || null,
+      };
+      const btn = $("f-save"); btn.disabled = true;
+      try {
+        if (isNew) {
+          fields.sort = Math.max(0, ...catalogue.map((c) => c.sort || 0)) + 1;
+          await MSP.admin.createCourse(fields);
+        } else {
+          await MSP.admin.updateCourse(course.id, fields);
+        }
+        admPeriod = period;
+        showModal(false);
+        await loadAll();
+        notify("ok", `${esc(code)} saved.`);
+      } catch (e) { btn.disabled = false; formErr(saveError(e)); }
+    };
+  }
+
+  // ---- add / edit a tutorial group -------------------------------------------
+  function openGroupForm(course, group) {
+    if (!course) return;
+    const isNew = !group;
+    const daySel = (id, val) => `<select id="${id}"><option value="">not set</option>${
+      DAYS.map((d) => `<option value="${d}"${canonDay(val) === d ? " selected" : ""}>${d}</option>`).join("")}</select>`;
+    const tm = (val) => `value="${esc(val || "")}"`;
+    $("modal-title").textContent = isNew ? "Add a group to " + course.code : "Edit " + course.code + " " + group.label;
+    $("modal-body").innerHTML = `
+      <div id="modal-msg"></div>
+      <div class="row2">
+        <div class="field"><label>Group name <span class="req">*</span></label>
+          <input type="text" id="f-label" value="${isNew ? "" : esc(group.label)}" placeholder="A1 + B1">
+          <div class="hint">Exactly as tutors should see it.</div></div>
+        <div class="field"><label>Tutors needed <span class="req">*</span></label>
+          <input type="number" id="f-cap" min="0" value="${isNew ? 1 : group.capacity}">
+          <div class="hint">Usually 1. Lab sessions are often 2.</div></div>
+      </div>
+
+      <label style="margin-top:6px">First meeting</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        ${daySel("f-day1", isNew ? "" : group.day1)}
+        <input type="time" id="f-start1" ${tm(isNew ? "" : group.start1)}>
+        <input type="time" id="f-end1" ${tm(isNew ? "" : group.end1)}>
+      </div>
+
+      <label>Second meeting</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:6px">
+        ${daySel("f-day2", isNew ? "" : group.day2)}
+        <input type="time" id="f-start2" ${tm(isNew ? "" : group.start2)}>
+        <input type="time" id="f-end2" ${tm(isNew ? "" : group.end2)}>
+      </div>
+      <div class="hint" style="margin-bottom:18px">Leave the second meeting empty for a one-off session.</div>
+
+      <div class="field">
+        <label style="display:flex;align-items:center;gap:9px;font-weight:600">
+          <input type="checkbox" id="f-open" style="width:16px;height:16px;accent-color:var(--accent)" ${isNew || group.is_open ? "checked" : ""}>
+          Open to tutors
+        </label>
+        <div class="hint">Untick to keep the group in the list but block sign-ups.</div>
+      </div>
+      ${actionRow(isNew ? "Add group" : "Save changes")}`;
+    showModal(true);
+
+    $("f-cancel").onclick = () => showModal(false);
+    $("f-save").onclick = async () => {
+      const label = $("f-label").value.trim();
+      if (!label) { formErr("Give the group a name, for example A1 + B1."); return; }
+      const fields = {
+        label,
+        capacity: Math.max(0, parseInt($("f-cap").value || "1", 10) || 0),
+        day1: $("f-day1").value || null,
+        start1: $("f-start1").value || null,
+        end1: $("f-end1").value || null,
+        day2: $("f-day2").value || null,
+        start2: $("f-start2").value || null,
+        end2: $("f-end2").value || null,
+        is_open: $("f-open").checked,
+      };
+      if (!isNew && fields.capacity < group.claimed) {
+        formErr(`${group.claimed} tutor${group.claimed === 1 ? " is" : "s are"} already signed up for this group,
+                 so it cannot need fewer than ${group.claimed}. Release one of them first.`);
+        return;
+      }
+      const btn = $("f-save"); btn.disabled = true;
+      try {
+        if (isNew) {
+          fields.course_id = course.id;
+          fields.sort = Math.max(0, ...course.groups.map((g) => g.sort || 0)) + 1;
+          await MSP.admin.createGroup(fields);
+        } else {
+          await MSP.admin.updateGroup(group.id, fields);
+        }
+        showModal(false);
+        await loadAll();
+        notify("ok", `${esc(course.code)} ${esc(label)} saved.`);
+      } catch (e) { btn.disabled = false; formErr(saveError(e)); }
+    };
+  }
+
+  async function removeGroup(course, group) {
+    if (group.claimed > 0) {
+      notify("err", `<strong>${esc(course.code)} ${esc(group.label)}</strong> cannot be removed while
+        ${group.claimed} tutor${group.claimed === 1 ? " is" : "s are"} signed up for it. Release them in the
+        registrations table at the top of this page first, then remove the group.`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (!confirm(`Remove group "${group.label}" from ${course.code}? Nobody is signed up for it.`)) return;
+    try {
+      await MSP.admin.deleteGroup(group.id);
+      await loadAll();
+      notify("ok", `${esc(course.code)} ${esc(group.label)} removed.`);
+    } catch (e) {
+      notify("err", e.message === "BLOCKED_BY_REGISTRATION"
+        ? "Somebody signed up for that group a moment ago, so it was not removed. Refresh to see who."
+        : saveError(e));
+    }
+  }
+
+  // ---- copy a course into another period --------------------------------------
+  function openCopyForm(course) {
+    if (!course) return;
+    const also = catalogue.filter((c) => c.code === course.code).map((c) => c.period).sort();
+    const n = course.groups.length;
+    $("modal-title").textContent = "Copy " + course.code;
+    $("modal-body").innerHTML = `
+      <div id="modal-msg"></div>
+      <p class="lead" style="margin-top:0">Makes a fresh copy of <strong>${esc(course.code)}</strong> with
+        ${n === 1 ? "its 1 group" : "all " + n + " groups"}, keeping the days, times and capacities.
+        The copy starts empty: no registrations come with it, and every group is open.</p>
+      <div class="field"><label>Copy into period <span class="req">*</span></label>
+        <input type="text" id="f-period" list="f-copy-list" placeholder="P2">
+        ${datalist("f-copy-list")}
+        <div class="hint">${esc(course.code)} currently exists in ${esc(also.join(", "))}.</div></div>
+      ${actionRow("Copy course")}`;
+    showModal(true);
+
+    $("f-cancel").onclick = () => showModal(false);
+    $("f-save").onclick = async () => {
+      const period = $("f-period").value.trim().toUpperCase();
+      if (!period) { formErr("Say which period to copy it into."); return; }
+      if (period === course.period) { formErr("That is the period it is already in. Pick a different one."); return; }
+      const btn = $("f-save"); btn.disabled = true;
+      try {
+        await MSP.admin.duplicateCourse(course.id, period);
+        admPeriod = period;
+        showModal(false);
+        await loadAll();
+        notify("ok", `${esc(course.code)} copied into Period ${esc(period.replace(/^P/, ""))}. Check the days and times, they came across unchanged.`);
+      } catch (e) { btn.disabled = false; formErr(saveError(e)); }
+    };
+  }
+
+  // ---- delete a course ---------------------------------------------------------
+  function openCourseDelete(course) {
+    if (!course) return;
+    const claimed = course.groups.reduce((n, g) => n + (g.claimed || 0), 0);
+    $("modal-title").textContent = "Delete " + course.code;
+
+    if (claimed > 0) {
+      $("modal-body").innerHTML = noticeHTML("err",
+        `<strong>${esc(course.code)}</strong> still has ${claimed} confirmed registration${claimed === 1 ? "" : "s"}.
+         A course with tutors on it cannot be deleted, by design. Release those tutors in the registrations
+         table first if you really do mean to remove it.`) +
+        `<div style="display:flex;justify-content:flex-end"><button class="btn btn-ghost" id="f-cancel">Close</button></div>`;
+      showModal(true);
+      $("f-cancel").onclick = () => showModal(false);
+      return;
+    }
+
+    $("modal-body").innerHTML =
+      noticeHTML("err", `This permanently deletes <strong>${esc(course.code)}</strong> in Period
+        ${esc(course.period.replace(/^P/, ""))} and ${course.groups.length === 1 ? "its group" : "all " + course.groups.length + " of its groups"}.
+        It cannot be undone. Nobody is signed up, so no registrations will be lost.`) +
+      `<div id="modal-msg"></div>
+       <div class="field"><label>Type <strong>${esc(course.code)}</strong> to confirm</label>
+         <input type="text" id="f-confirm" placeholder="${esc(course.code)}" autocomplete="off"></div>
+       ${actionRow("Delete permanently", true)}`;
+    showModal(true);
+
+    $("f-cancel").onclick = () => showModal(false);
+    $("f-save").onclick = async () => {
+      if ($("f-confirm").value.trim().toUpperCase() !== course.code.toUpperCase()) {
+        formErr("The code does not match, so nothing was deleted.");
+        return;
+      }
+      const btn = $("f-save"); btn.disabled = true;
+      try {
+        await MSP.admin.deleteCourse(course.id);
+        showModal(false);
+        await loadAll();
+        notify("ok", `${esc(course.code)} deleted.`);
+      } catch (e) {
+        btn.disabled = false;
+        formErr(e.message === "BLOCKED_BY_REGISTRATION"
+          ? "Somebody signed up a moment ago, so nothing was deleted. Refresh to see who."
+          : saveError(e));
+      }
+    };
+  }
+
+  $("add-course-btn").addEventListener("click", () => openCourseForm(null));
 
   // ---------- CSV ----------
   $("csv-btn").addEventListener("click", () => {

@@ -232,6 +232,36 @@ create policy group_admin_write  on tutorial_group for update using (is_admin())
 create policy course_admin_write on course         for update using (is_admin());
 create policy settings_admin_write on app_settings for update using (is_admin());
 
+-- Admins may also ADD and DELETE courses and groups, which is what the
+-- "Courses & groups" section of the Office Dashboard uses (no SQL needed).
+-- Deleting is refused while anyone holds a confirmed place: the DELETE
+-- policies below simply do not match those rows, so the delete affects zero
+-- rows and the dashboard says so. Sign-ups can never be lost to a mis-click.
+drop policy if exists course_admin_insert on course;
+drop policy if exists group_admin_insert  on tutorial_group;
+create policy course_admin_insert on course         for insert with check (is_admin());
+create policy group_admin_insert  on tutorial_group for insert with check (is_admin());
+
+drop policy if exists course_admin_delete on course;
+drop policy if exists group_admin_delete  on tutorial_group;
+create policy group_admin_delete on tutorial_group for delete
+  using (
+    is_admin()
+    and not exists (
+      select 1 from registration r
+       where r.group_id = tutorial_group.id and r.status = 'confirmed'
+    )
+  );
+create policy course_admin_delete on course for delete
+  using (
+    is_admin()
+    and not exists (
+      select 1 from registration r
+        join tutorial_group g on g.id = r.group_id
+       where g.course_id = course.id and r.status = 'confirmed'
+    )
+  );
+
 -- admin_user is readable/writable only by existing admins (manage via SQL editor for the first one).
 drop policy if exists admin_self_read on admin_user;
 create policy admin_self_read on admin_user for select using (is_admin());

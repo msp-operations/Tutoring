@@ -27,6 +27,7 @@ app/
 └─ supabase/
     ├─ schema.sql        Database tables, atomic claim, privacy rules
     ├─ seed.sql          Courses & groups generated from the source spreadsheet
+    ├─ admin-catalogue.sql  Lets office admins add/edit courses & groups in the UI
     ├─ feedback.sql      Feedback table + submit function (run once)
     ├─ FEEDBACK-SETUP.md Feedback capture + optional email-to-office guide
     └─ functions/        Edge Function: feedback-email (optional email forward)
@@ -51,6 +52,10 @@ off. Good for showing Linzi/Panos the look and flow.
 2. In the project, open **SQL Editor** and run, in order:
    - the contents of `supabase/schema.sql`
    - the contents of `supabase/seed.sql`
+
+   `schema.sql` already includes the catalogue-editing permissions. On a deployment that
+   predates them, run `supabase/admin-catalogue.sql` once instead of re-running `schema.sql`
+   (re-running the whole schema fails on the `alter publication` lines).
    - the contents of `supabase/feedback.sql` (enables the feedback feature)
 
 ### 2. Make yourself an admin
