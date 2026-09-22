@@ -153,7 +153,12 @@
       const { data } = await client.auth.getSession();
       return data.session;
     },
-    onAuth(cb) { if (client) client.auth.onAuthStateChange((_e, s) => cb(s)); },
+    // The event name matters. onAuthStateChange also fires TOKEN_REFRESHED
+    // (roughly hourly, and after the laptop wakes) and USER_UPDATED on a
+    // session that is already signed in, so a caller that treats every event
+    // as a fresh sign-in will re-run whatever it does on sign-in, over and
+    // over, for as long as the tab is open.
+    onAuth(cb) { if (client) client.auth.onAuthStateChange((event, s) => cb(s, event)); },
     // Throws if the check itself could not run. A thrown error means "we do not
     // know", which is not the same as "you are not an admin", and the dashboard
     // has to tell those two apart or a network blip looks like a rejection.
