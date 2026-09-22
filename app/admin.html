@@ -172,13 +172,35 @@
   });
   $("signout").addEventListener("click", async (e) => { e.preventDefault(); await MSP.admin.signOut(); location.reload(); });
 
-  MSP.admin.onAuth(async (session) => { if (session) await enterDashboard(session); });
+  // Once we are in, stay in. TOKEN_REFRESHED fires about every hour and again
+  // when the machine wakes from sleep, and it used to re-run the whole gate on
+  // an already-admitted session. One unlucky check then signed the user out and
+  // cost them a fresh magic link, which is why the dashboard appeared to lose
+  // your admin rights at random.
+  let dashboardReady = false;
+  let entering = false;
+
+  MSP.admin.onAuth(async (session, event) => {
+    if (!session) return;
+    if (dashboardReady || entering) return;
+    if (event && event !== "INITIAL_SESSION" && event !== "SIGNED_IN") return;
+    entering = true;
+    try { await enterDashboard(session); } finally { entering = false; }
+  });
 
   async function enterDashboard(session) {
     const who = (session && session.user && session.user.email) || "";
     let allowed = false;
     try {
       allowed = await MSP.admin.isAllowed();
+      // is_admin() answers a clean false, not an error, when the request went
+      // out without a usable token (it coalesces a missing JWT email to ''),
+      // so a check that races a token refresh is indistinguishable from a real
+      // refusal. Re-read the session and ask once more before refusing anyone.
+      if (!allowed) {
+        const fresh = await MSP.admin.session();
+        if (fresh) allowed = await MSP.admin.isAllowed();
+      }
     } catch (e) {
       // The check could not run. Do not sign the user out: that would cost them
       // a fresh magic link for what is probably a passing network problem.
@@ -187,12 +209,16 @@
       return;
     }
     if (!allowed) {
+      // Deliberately does NOT sign out. Row-level security is what actually
+      // protects the data, not this screen, so leaving the session alone is
+      // safe and saves a pointless round trip through her inbox.
       notify("err", "You are signed in as <code>" + esc(who) + "</code>, but that address is not on " +
         "the office allow-list. Ask an existing admin to add <strong>exactly that address</strong> to " +
-        "<code>admin_user</code>. If you have a second UM address, it may be the one on the list.");
-      await MSP.admin.signOut();
+        "<code>admin_user</code>. If you have a second UM address, use Sign out and try that one.");
+      $("signout").style.display = "inline";
       return;
     }
+    dashboardReady = true;
     $("login").style.display = "none";
     $("dash").style.display = "block";
     $("signout").style.display = "inline";
