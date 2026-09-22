@@ -154,10 +154,13 @@
       return data.session;
     },
     onAuth(cb) { if (client) client.auth.onAuthStateChange((_e, s) => cb(s)); },
+    // Throws if the check itself could not run. A thrown error means "we do not
+    // know", which is not the same as "you are not an admin", and the dashboard
+    // has to tell those two apart or a network blip looks like a rejection.
     async isAllowed() {
       if (!client) return false;
       const { data, error } = await client.rpc("is_admin");
-      if (error) return false;
+      if (error) throw error;
       return !!data;
     },
     async listRegistrations() {

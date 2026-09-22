@@ -172,12 +172,24 @@
   });
   $("signout").addEventListener("click", async (e) => { e.preventDefault(); await MSP.admin.signOut(); location.reload(); });
 
-  MSP.admin.onAuth(async (session) => { if (session) await enterDashboard(); });
+  MSP.admin.onAuth(async (session) => { if (session) await enterDashboard(session); });
 
-  async function enterDashboard() {
-    const allowed = await MSP.admin.isAllowed();
+  async function enterDashboard(session) {
+    const who = (session && session.user && session.user.email) || "";
+    let allowed = false;
+    try {
+      allowed = await MSP.admin.isAllowed();
+    } catch (e) {
+      // The check could not run. Do not sign the user out: that would cost them
+      // a fresh magic link for what is probably a passing network problem.
+      notify("err", "Could not check your access just now (" + esc(e.message || e) +
+        "). This is not a rejection. Please reload the page in a moment.");
+      return;
+    }
     if (!allowed) {
-      notify("err", "This account is signed in but is not on the office allow-list. Ask an existing admin to add your email to <code>admin_user</code>.");
+      notify("err", "You are signed in as <code>" + esc(who) + "</code>, but that address is not on " +
+        "the office allow-list. Ask an existing admin to add <strong>exactly that address</strong> to " +
+        "<code>admin_user</code>. If you have a second UM address, it may be the one on the list.");
       await MSP.admin.signOut();
       return;
     }

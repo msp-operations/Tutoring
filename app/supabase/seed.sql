@@ -7,6 +7,31 @@
 -- WARNING: a re-run REBUILDS the whole catalogue and thereby erases all live
 -- sign-ups (deleting tutorial_group cascades to registration). Export the
 -- registrations CSV from the dashboard first. Run AFTER schema.sql.
+--
+-- ===========================================================================
+-- STOP. THIS FILE NO LONGER DESCRIBES THE LIVE DATABASE. (checked 22 Sep 2026)
+--
+-- Since the catalogue editor shipped on 15 Sep the office has been editing the
+-- live catalogue from the dashboard, which is the intended workflow, but those
+-- edits do not come back here. Running this file today would replace a correct
+-- live catalogue with a stale one AND destroy 55 confirmed P2 sign-ups, which
+-- on the free plan cannot be restored because there are no backups.
+--
+-- Differences found on 22 Sep 2026, live versus this file:
+--   1. Course 'PRA1102 MSP Staff only' (Study Smart Sessions, 15 groups,
+--      coordinator Suzan du Pree) was created live on 17 Sep. It is not in
+--      this file at all. It holds 8 sign-ups.
+--   2. BIO1101 P2 A13+B13 is open live and has been claimed. Here it is false.
+--   3. BIO1101 P2 A1+B1 is live as is_open = true with capacity = 0. Here it
+--      is is_open = false with capacity = 1.
+--   4. PRA1102 P2: 22 of the 30 sessions are capacity 1 live. This file sets
+--      capacity 2 for all 30. Only these 8 are still 2: GR05 Biology,
+--      GR05 Chemistry, GR06 Biology, GR07 Biology, GR08 Biology,
+--      GR09 Chemistry, GR10 Biology, GR10 Chemistry.
+--
+-- Treat the live database as the source of truth until this file is rebuilt
+-- from it. Same applies to demo-data.js and update-course-details.sql.
+-- ===========================================================================
 begin;
 delete from registration where tutor_type = 'Pre-assigned';
 delete from tutorial_group;
