@@ -9,9 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Office dashboard - MSP Tutor Registration</title>
 <link rel="icon" type="image/png" href="assets/img/msp-logo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/msp-ui/msp-ui.css">
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -19,29 +17,17 @@
      clicking in the dashboard itself, not by editing this file. See
      EDITING-INSTRUCTIONS (repo) / the PDF in the Tutoring folder. -->
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <a href="index.html" class="logos" aria-label="Maastricht University, Faculty of Science and Engineering - home">
-      <img class="um-logo" src="assets/img/um-fse-logo.png" alt="Maastricht University - Faculty of Science and Engineering">
-      <span class="divider"></span>
-      <span class="lockup-text">Office Dashboard</span>
-    </a>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="register.html">Register to tutor</a>
-      <a href="#" id="signout" style="display:none">Sign out</a>
-    </nav>
-  </div>
-</header>
+<!-- Sign out lives in the sidebar (moved there by the shell script at the end of the page) -->
+<button type="button" id="signout" class="msp-sb-cfg" style="display:none">Sign out</button>
 
-<main>
+<main class="msp-main wide">
   <div id="notice-area"></div>
 
   <!-- LOGIN -->
   <div id="login">
     <h2 class="section">Office login</h2>
     <p class="lead">Enter your MSP email. We'll send you a one-time sign-in link - no password to remember. Only addresses on the office allow-list can see registrations.</p>
-    <div style="max-width:420px;margin-top:22px">
+    <div class="panel" style="max-width:420px;margin-top:22px">
       <div id="login-msg"></div>
       <div class="field"><label>Email address</label><input id="login-email" type="email" placeholder="name@maastrichtuniversity.nl"></div>
       <button class="btn btn-primary" id="login-btn" style="width:100%">Email me a sign-in link</button>
@@ -84,7 +70,7 @@
       </select>
     </div>
 
-    <div style="overflow-x:auto">
+    <div class="table-wrap">
       <table class="data" id="reg-table">
         <thead><tr>
           <th>Tutor</th><th>Type</th><th>Course</th><th>Group</th><th>Period</th><th>Registered</th><th>Status</th><th></th>
@@ -106,7 +92,7 @@
       <button class="btn btn-ghost" id="fb-csv-btn">Export CSV</button>
     </div>
     <p class="lead">What tutors and visitors told us through the "Share feedback" link. Tick "Done" once handled.</p>
-    <div style="overflow-x:auto;margin-top:16px">
+    <div class="table-wrap" style="margin-top:16px">
       <table class="data" id="fb-table">
         <thead><tr>
           <th>When</th><th>Type</th><th>Feedback</th><th>From</th><th>Page</th><th>Status</th><th></th>
@@ -127,9 +113,8 @@
   <div class="body" id="modal-body"></div>
 </div>
 
-<footer>
+<footer class="msp-footer">
   <div class="footer-inner">
-    <div>Maastricht Science Programme · Office dashboard</div>
     <a href="privacy.html">Privacy statement</a>
     <div class="copy">© Maastricht Science Programme</div>
   </div>
@@ -771,6 +756,30 @@
   // already signed in?
   (async () => { if (await MSP.admin.session()) await enterDashboard(); })();
 })();
+</script>
+<!-- The shared MSP frame (sidebar, canvas, type) - see assets/msp-ui/ -->
+<script src="assets/msp-ui/msp-shell.js"></script>
+<script>
+  MSPShell.init({
+    title: 'MSP Tutor Registration',
+    nav: [
+      { label: 'Home',              hint: 'Open positions',         href: 'index.html',    icon: 'home' },
+      { label: 'Register to tutor', hint: 'Claim a tutorial group', href: 'register.html', icon: 'edit' },
+      { divider: true },
+      { label: 'Office login',      hint: 'Dashboard',              href: 'admin.html',    icon: 'lock' }
+    ],
+    meta: '<span>Office dashboard</span>'
+  });
+  // The Sign out button is written in the page markup (the dashboard script
+  // wires it by id while the page loads) and moves into the sidebar's meta
+  // slot once the shell has built it. Moving a node keeps its listeners.
+  (function () {
+    function place() {
+      var slot = document.getElementById('msp-sb-meta'), btn = document.getElementById('signout');
+      if (slot && btn) slot.appendChild(btn);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', place); else place();
+  })();
 </script>
 </body>
 </html>

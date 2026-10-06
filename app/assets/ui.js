@@ -29,7 +29,7 @@
     if (reduce) return;
     opts = opts || {};
     const n = opts.count || 90;
-    const colors = ["#E84E10", "#001C3D", "#00A2DB", "#ff6a33", "#ffffff"];
+    const colors = ["#E87722", "#011B3C", "#6ED2EC", "#F59E4B", "#ffffff"];
     const wrap = document.createElement("div");
     wrap.className = "confetti";
     wrap.setAttribute("aria-hidden", "true");
