@@ -1,6 +1,6 @@
--- Seed from 'Info for tutor registration tool.xlsx' (groups/times) +
+-- Seed from the tutor registration spreadsheet on UM storage (groups/times) +
 -- 'reference/originals/2026-2027 MSP Course Catalogue May 2026.pdf' (course detail).
--- Coordinator emails verified against reference/coordinators-2026-2027.csv.
+-- Coordinator emails verified against the coordinator list on UM storage.
 -- Revised 1-2 Sep 2026 (Severine's P2 confirmation): INT1101, MAT2009 and
 -- PHY2010 removed from P2; BIO1101 reshaped to 16 pairs (vacancies open);
 -- PRA1102 added (30 dated half-day lab sessions, capacity 2).

@@ -5,3 +5,10 @@ Thumbs.db
 
 # Internal working notes for Claude Code, not part of the published tool.
 CLAUDE.md
+
+# Files with names/emails of tutors or staff. Keep on UM storage, never commit (public repo).
+reference/coordinators-*.csv
+reference/coordinators-*.md
+*.xlsx
+*.xls
+Tutoring Extra Info for Context/

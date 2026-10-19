@@ -99,13 +99,13 @@ several groups is all-or-nothing.
 ## Where the catalogue data comes from
 
 Tutorial groups, days and times come from
-`reference/Info for tutor registration tool.xlsx`.
+`Info for tutor registration tool.xlsx` (kept on UM storage, not in this repo).
 The full course information shown on the register page - coordinator + email,
 level, prerequisites, co-requisites, recommended courses, objectives,
 description, instructional format, assessment, literature and the generative-AI
 policy - is pulled from the **`2026-2027 MSP Course Catalogue May 2026.pdf`** (in
 `reference/originals/`, the up-to-date catalogue). Coordinator emails are verified
-against `reference/coordinators-2026-2027.csv`. The flat fields live in their own
+against the coordinator list on UM storage. The flat fields live in their own
 columns; everything else is stored in a `details` JSONB column on `course`.
 
 The `reference/` folder is the supporting context for all of this: the full

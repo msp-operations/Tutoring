@@ -13,10 +13,10 @@ usable as context) or a small set of canonical source PDFs.
 | File | What it is | Feeds / relates to |
 |---|---|---|
 | [`course-catalogue-2026-2027.md`](course-catalogue-2026-2027.md) / `.csv` | All 142 courses & skills by discipline + period, with pre-/co-requisites. "Course" = has tutorial groups (tutor-relevant); "Skill" = PRA practical. | The course list & prerequisites shown on the register page (`course` table, `details` JSONB). |
-| [`coordinators-2026-2027.md`](coordinators-2026-2027.md) / `.csv` | 81 course coordinators -> UM email. | `coordinator` / `coordinator_email` fields when adding/maintaining courses. |
+| `coordinators-2026-2027.md` / `.csv` *(kept on UM storage, not in this repo)* | 81 course coordinators -> UM email. | `coordinator` / `coordinator_email` fields when adding/maintaining courses. |
 | [`frame-schedule-2026-2027.md`](frame-schedule-2026-2027.md) | The 5 fixed weekly slots + standard teaching time blocks + period dates. | The Mon-Fri timetable and time-clash logic on the register page. |
 | [`tutoring-procedures.md`](tutoring-procedures.md) | How the course-registration -> scheduling -> tutor-allocation cycle works, who's eligible, how tutors are sourced. | Context for maintaining the tool / onboarding. |
-| `Info for tutor registration tool.xlsx` | Tutorial groups, days & times (Fall P1/P2). | Source for `seed.sql` / `demo-data.js` - the live catalogue. |
+| `Info for tutor registration tool.xlsx` *(kept on UM storage, not in this repo)* | Tutorial groups, days & times (Fall P1/P2). | Source for `seed.sql` / `demo-data.js` - the live catalogue. |
 | [`originals/`](originals/) | Canonical source PDFs (see below). | Authoritative fallback for the distilled files. |
 
 ### `originals/`
@@ -33,7 +33,8 @@ usable as context) or a small set of canonical source PDFs.
 
 ## How this maps to the tool
 
-The tool's live catalogue is generated from two source files kept in this folder:
+The tool's live catalogue is generated from two source files (the spreadsheet is
+kept on UM storage, not in this public repo):
 `Info for tutor registration tool.xlsx` (tutorial groups, days, times -> currently
 Fall P1/P2 only, the 12 active courses / 117 groups) and the catalogue PDF in
 `originals/` (course detail). **This folder is the supporting reference** for that data: the
@@ -51,6 +52,8 @@ equivalents and replace these files.
 ## Provenance & privacy
 
 Sources are internal MSP office documents. Only **course-level** information is
-included here (course codes, titles, coordinators' work emails, schedules,
-procedures) - no student data, no registration exports, no private correspondence
-from the archive.
+included here (course codes, titles, schedules, procedures) - no student data, no
+tutor data, no registration exports, no private correspondence from the archive.
+Files with names of tutors or staff (the tutor spreadsheet, the coordinator list)
+stay on UM storage and are listed in `.gitignore` so they can't be committed by
+accident.
